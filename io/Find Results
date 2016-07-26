@@ -1,0 +1,1426 @@
+Searching 1446 files for "propagation" (regex)
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/field.js:
+ 1356                                        e, stringKey, isModifierPressed)) {
+ 1357        e.preventDefault();
+ 1358:       // We don't call stopPropagation as some other handler outside of
+ 1359        // trogedit might need it.
+ 1360      }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/enterhandler.js:
+  126    if (field.firstChild == container && goog.editor.node.isEmpty(container)) {
+  127      e.preventDefault();
+  128:     // TODO(user): I think we probably don't need to stopPropagation here
+  129:     e.stopPropagation();
+  130    }
+  131  };
+  ...
+  295            goog.editor.plugins.Blockquote.SPLIT_COMMAND, cursorPosition);
+  296        if (split) {
+  297:         // TODO(user): I think we probably don't need to stopPropagation here
+  298          e.preventDefault();
+  299:         e.stopPropagation();
+  300        }
+  301  
+  ...
+  358        goog.editor.plugins.Blockquote.SPLIT_COMMAND, cursorPosition);
+  359    if (handled) {
+  360:     // TODO(user): I think we probably don't need to stopPropagation here
+  361      e.preventDefault();
+  362:     e.stopPropagation();
+  363    }
+  364  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/headerformatter.js:
+   88      // Prevent default isn't enough to cancel tab navigation in FF.
+   89      if (goog.userAgent.GECKO) {
+   90:       e.stopPropagation();
+   91      }
+   92      return true;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/tagonenterhandler.js:
+  127      // Don't delete if it's the last node in the field and just has a BR.
+  128      e.preventDefault();
+  129:     // TODO(user): I think we probably don't need to stopPropagation here
+  130:     e.stopPropagation();
+  131    } else {
+  132      // Go ahead with deletion.
+  ...
+  284  
+  285    e.preventDefault();
+  286:   // TODO(user): I think we probably don't need to stopPropagation here
+  287:   e.stopPropagation();
+  288  };
+  289  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/actionhandler.js:
+  136    } finally {
+  137      // Stop propagating the event
+  138:     e.stopPropagation();
+  139    }
+  140  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/browserevent.js:
+  296      this.preventDefault();
+  297    }
+  298:   delete this.propagationStopped_;
+  299  };
+  300  
+  ...
+  349   * @override
+  350   */
+  351: goog.events.BrowserEvent.prototype.stopPropagation = function() {
+  352:   goog.events.BrowserEvent.superClass_.stopPropagation.call(this);
+  353:   if (this.event_.stopPropagation) {
+  354:     this.event_.stopPropagation();
+  355    } else {
+  356      this.event_.cancelBubble = true;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/event.js:
+   41  /**
+   42   * A base class for event objects, so that they can support preventDefault and
+   43:  * stopPropagation.
+   44   *
+   45   * @param {string} type Event Type.
+   ..
+   94   *     this package is strongly discouraged.
+   95   */
+   96: goog.events.Event.prototype.propagationStopped_ = false;
+   97  
+   98  
+   ..
+  117  
+  118  /**
+  119:  * Stops event propagation.
+  120   */
+  121: goog.events.Event.prototype.stopPropagation = function() {
+  122:   this.propagationStopped_ = true;
+  123  };
+  124  
+  ...
+  134  
+  135  /**
+  136:  * Stops the propagation of the event. It is equivalent to
+  137:  * {@code e.stopPropagation()}, but can be used as the callback argument of
+  138   * {@link goog.events.listen} without declaring another function.
+  139   * @param {!goog.events.Event} e An event.
+  140   */
+  141: goog.events.Event.stopPropagation = function(e) {
+  142:   e.stopPropagation();
+  143  };
+  144  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/events.js:
+   39   * @supported IE6+, FF1.5+, WebKit, Opera.
+   40   * @see ../demos/events.html
+   41:  * @see ../demos/event-propagation.html
+   42   * @see ../demos/stopevent.html
+   43   */
+   ..
+  976   * If any of the listeners returns false OR calls preventDefault then this
+  977   * function will return false.  If one of the capture listeners calls
+  978:  * stopPropagation, then the bubble listeners won't fire.
+  979   *
+  980   * @param {goog.events.Listenable|goog.events.EventTarget} src The
+  ...
+ 1012  
+ 1013    // If accepting a string or object, create a custom event object so that
+ 1014:   // preventDefault and stopPropagation work with the event.
+ 1015    if (goog.isString(e)) {
+ 1016      e = new goog.events.Event(e, src);
+ ....
+ 1041      // Call capture listeners
+ 1042      for (var i = ancestors.length - 1;
+ 1043:          !e.propagationStopped_ && i >= 0 && targetsMap.remaining_;
+ 1044           i--) {
+ 1045        e.currentTarget = ancestors[i];
+ ....
+ 1058  
+ 1059        // Call bubble listeners
+ 1060:       for (var i = 0; !e.propagationStopped_ && i < ancestors.length &&
+ 1061             targetsMap.remaining_;
+ 1062             i++) {
+ ....
+ 1071  
+ 1072        for (var current = src;
+ 1073:            !e.propagationStopped_ && current && targetsMap.remaining_;
+ 1074             current = current.getParentEventTarget()) {
+ 1075          e.currentTarget = current;
+ ....
+ 1123    map = map[type];
+ 1124    var retval, targetsMap;
+ 1125:   // Synthesize event propagation if the browser does not support W3C
+ 1126    // event model.
+ 1127    if (!goog.events.BrowserFeature.HAS_W3C_EVENT_SUPPORT) {
+ ....
+ 1161          // Call capture listeners
+ 1162          for (var i = ancestors.length - 1;
+ 1163:              !evt.propagationStopped_ && i >= 0 && targetsMap.remaining_;
+ 1164               i--) {
+ 1165            evt.currentTarget = ancestors[i];
+ ....
+ 1174            // Call bubble listeners
+ 1175            for (var i = 0;
+ 1176:                !evt.propagationStopped_ && i < ancestors.length &&
+ 1177                 targetsMap.remaining_;
+ 1178                 i++) {
+ ....
+ 1184  
+ 1185        } else {
+ 1186:         // Bubbling, let IE handle the propagation.
+ 1187          retval = goog.events.fireListener(listener, evt);
+ 1188        }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/eventtarget.js:
+   50   * </ul>
+   51   *
+   52:  * <p>Unless propagation is stopped, an event dispatched by an EventTarget
+   53   * will bubble to the parent returned by <code>getParentEventTarget</code>.
+   54   * To set the parent, call <code>setParentEventTarget</code> or override
+   ..
+  493  
+  494    // If accepting a string or object, create a custom event object so that
+  495:   // preventDefault and stopPropagation work with the event.
+  496    if (goog.isString(e)) {
+  497      e = new goog.events.Event(e, target);
+  ...
+  508    // Executes all capture listeners on the ancestors, if any.
+  509    if (opt_ancestorsTree) {
+  510:     for (var i = opt_ancestorsTree.length - 1; !e.propagationStopped_ && i >= 0;
+  511           i--) {
+  512        currentTarget = e.currentTarget = opt_ancestorsTree[i];
+  ...
+  516  
+  517    // Executes capture and bubble listeners on the target.
+  518:   if (!e.propagationStopped_) {
+  519      currentTarget = e.currentTarget = target;
+  520      rv = currentTarget.fireListeners(type, true, e) && rv;
+  521:     if (!e.propagationStopped_) {
+  522        rv = currentTarget.fireListeners(type, false, e) && rv;
+  523      }
+  ...
+  526    // Executes all bubble listeners on the ancestors, if any.
+  527    if (opt_ancestorsTree) {
+  528:     for (i = 0; !e.propagationStopped_ && i < opt_ancestorsTree.length; i++) {
+  529        currentTarget = e.currentTarget = opt_ancestorsTree[i];
+  530        rv = currentTarget.fireListeners(type, false, e) && rv;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/eventtargettester.js:
+  599  
+  600  
+  601: function testStopPropagation() {
+  602    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  603    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  604  
+  605:   listeners[0] = createListener(function(e) { e.stopPropagation(); });
+  606    listen(eventTargets[0], EventType.A, listeners[0]);
+  607    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  617  
+  618  
+  619: function testStopPropagation2() {
+  620    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  621    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  622  
+  623:   listeners[1] = createListener(function(e) { e.stopPropagation(); });
+  624    listen(eventTargets[0], EventType.A, listeners[0]);
+  625    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  635  
+  636  
+  637: function testStopPropagation3() {
+  638    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  639    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  640  
+  641:   listeners[2] = createListener(function(e) { e.stopPropagation(); });
+  642    listen(eventTargets[0], EventType.A, listeners[0]);
+  643    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  654  
+  655  
+  656: function testStopPropagationAtCapture() {
+  657    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  658    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  659  
+  660:   listeners[0] = createListener(function(e) { e.stopPropagation(); });
+  661    listen(eventTargets[2], EventType.A, listeners[0], true);
+  662    listen(eventTargets[1], EventType.A, listeners[1], true);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/filedrophandler.js:
+   91   * always want to prevent default actions, e.g. when the user drags text or
+   92   * links on a text area we should not prevent the browser default action that
+   93:  * inserts the text in the text area. It is also necessary to stop propagation
+   94   * when handling drag events on the element to prevent them from propagating
+   95   * to the document.
+   ..
+  192      // the document. Both lines are needed! (See comment above).
+  193      e.preventDefault();
+  194:     e.stopPropagation();
+  195      // Allow the drop on the drop zone.
+  196      var dt = e.getBrowserEvent().dataTransfer;
+  ...
+  214      // the document. Both lines are needed! (See comment above).
+  215      e.preventDefault();
+  216:     e.stopPropagation();
+  217      // Dispatch DROP event.
+  218      this.dispatch_(e);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/listenable.js:
+  158   * If any of the listeners returns false OR calls preventDefault then this
+  159   * function will return false.  If one of the capture listeners calls
+  160:  * stopPropagation, then the bubble listeners won't fire.
+  161   *
+  162   * @param {goog.events.EventLike} e Event object.
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/gears/workerchannel.js:
+  136  
+  137    e.preventDefault();
+  138:   e.stopPropagation();
+  139  };
+  140  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/gears/workerpool.js:
+   96   * @param {function(!GearsErrorObject):boolean} fn An error handler function
+   97   *     that gets passed an error object with message and line number attributes.
+   98:  *     Returns whether the error was handled. If true stops propagation.
+   99   * @param {Object=} opt_handler This object for the function.
+  100   */
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/testing/events/events.js:
+   78   *     this package is strongly discouraged.
+   79   */
+   80: goog.testing.events.Event.prototype.propagationStopped_ = false;
+   81  
+   82  
+   ..
+   95  
+   96  /** @override */
+   97: goog.testing.events.Event.prototype.stopPropagation = function() {
+   98:   this.propagationStopped_ = true;
+   99  };
+  100  
+  ...
+  563    // dispatch capturing listeners
+  564    for (var j = ancestors.length - 1;
+  565:        j >= 0 && !event.propagationStopped_;
+  566         j--) {
+  567      goog.events.fireListeners(ancestors[j], event.type, true,
+  ...
+  571    // dispatch bubbling listeners
+  572    for (var j = 0;
+  573:        j < ancestors.length && !event.propagationStopped_;
+  574         j++) {
+  575      goog.events.fireListeners(ancestors[j], event.type, false,
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/abstractspellchecker.js:
+  946  goog.ui.AbstractSpellChecker.prototype.blockReadyEvents = function() {
+  947    goog.events.listen(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  948:       goog.events.Event.stopPropagation, true);
+  949  };
+  950  
+  ...
+  959  goog.ui.AbstractSpellChecker.prototype.unblockReadyEvents = function() {
+  960    goog.events.unlisten(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  961:       goog.events.Event.stopPropagation, true);
+  962  };
+  963  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/ac/inputhandler.js:
+  819          if (this.ac_.selectHilited()) {
+  820            e.preventDefault();
+  821:           e.stopPropagation();
+  822            return true;
+  823          }
+  ...
+  832          this.ac_.dismiss();
+  833          e.preventDefault();
+  834:         e.stopPropagation();
+  835          return true;
+  836        }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/ac/renderer.js:
+  949      }));
+  950    }
+  951:   e.stopPropagation();
+  952  };
+  953  
+  ...
+  959   */
+  960  goog.ui.ac.Renderer.prototype.handleMouseDown_ = function(e) {
+  961:   e.stopPropagation();
+  962    e.preventDefault();
+  963  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/activitymonitor.js:
+   44   * @param {boolean=} opt_useBubble Whether to use the bubble phase to listen for
+   45   *     events. By default listens on the capture phase so that it won't miss
+   46:  *     events that get stopPropagation/cancelBubble'd. However, this can cause
+   47   *     problems in IE8 if the page loads multiple scripts that include the
+   48   *     closure event handling code.
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/attachablemenu.js:
+  370    e.preventDefault();
+  371  
+  372:   // Stop propagation to prevent application level keyboard shortcuts from
+  373    // firing.
+  374:   e.stopPropagation();
+  375  
+  376    this.dispatchEvent(e);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/charpicker.js:
+  474    this.keyHandler_ = new goog.events.KeyHandler(this.input_.getElement());
+  475  
+  476:   // Stop the propagation of ACTION events at menu and submenu buttons.
+  477    // If stopped at capture phase, the button will not be set to normal state.
+  478    // If not stopped, the user widget will receive the event, which is
+  ...
+  483            this.menubutton_,
+  484            goog.ui.Component.EventType.ACTION,
+  485:           goog.events.Event.stopPropagation).
+  486        listen(
+  487            this.submenubutton_,
+  488            goog.ui.Component.EventType.ACTION,
+  489:           goog.events.Event.stopPropagation).
+  490        listen(
+  491            this,
+  ...
+  567      this.modifyGridWithItems_(this.grid_, this.items, itempos);
+  568    }
+  569:   e.stopPropagation();
+  570  };
+  571  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/checkbox.js:
+  240   */
+  241  goog.ui.Checkbox.prototype.handleClickOrSpace_ = function(e) {
+  242:   e.stopPropagation();
+  243    var eventType = this.checked_ ? goog.ui.Component.EventType.UNCHECK :
+  244        goog.ui.Component.EventType.CHECK;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/colormenubutton.js:
+  170   * Handles {@link goog.ui.Component.EventType.ACTION} events dispatched by
+  171   * the menu item clicked by the user.  Updates the button, calls the superclass
+  172:  * implementation to hide the menu, stops the propagation of the event, and
+  173   * dispatches an ACTION event on behalf of the button itself.  Overrides
+  174   * {@link goog.ui.MenuButton#handleMenuAction}.
+  ...
+  185    }
+  186    goog.ui.ColorMenuButton.superClass_.handleMenuAction.call(this, e);
+  187:   e.stopPropagation();
+  188    this.dispatchEvent(goog.ui.Component.EventType.ACTION);
+  189  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/colorpicker.js:
+  279   */
+  280  goog.ui.ColorPicker.prototype.onColorPaletteAction_ = function(e) {
+  281:   e.stopPropagation();
+  282    this.dispatchEvent(goog.ui.ColorPicker.EventType.CHANGE);
+  283  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/combobox.js:
+  647    }
+  648    // Stop the event from propagating outside of the combo box
+  649:   e.stopPropagation();
+  650  };
+  651  
+  ...
+  673    this.logger_.info('onMenuSelected_()');
+  674    var item = /** @type {!goog.ui.MenuItem} */ (e.target);
+  675:   // Stop propagation of the original event and redispatch to allow the menu
+  676    // select to be cancelled at this level. i.e. if a menu item should cause
+  677    // some behavior such as a user prompt instead of assigning the caption as
+  ...
+  687      this.dismiss();
+  688    }
+  689:   e.stopPropagation();
+  690  };
+  691  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/component.js:
+   71  
+   72  /**
+   73:  * Common events fired by components so that event propagation is useful.  Not
+   74   * all components are expected to dispatch or listen for all event types.
+   75   * Events dispatched before a state transition should be cancelable to prevent
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/container.js:
+  711        this.handleKeyEventInternal(e)) {
+  712      e.preventDefault();
+  713:     e.stopPropagation();
+  714      return true;
+  715    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/control.js:
+ 1357        this.handleKeyEventInternal(e)) {
+ 1358      e.preventDefault();
+ 1359:     e.stopPropagation();
+ 1360      return true;
+ 1361    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/datepicker.js:
+  912   */
+  913  goog.ui.DatePicker.prototype.showMonthMenu_ = function(event) {
+  914:   event.stopPropagation();
+  915  
+  916    var list = [];
+  ...
+  930   */
+  931  goog.ui.DatePicker.prototype.showYearMenu_ = function(event) {
+  932:   event.stopPropagation();
+  933  
+  934    var list = [];
+  ...
+ 1035   */
+ 1036  goog.ui.DatePicker.prototype.handleMenuClick_ = function(event) {
+ 1037:   event.stopPropagation();
+ 1038  
+ 1039    this.destroyMenu_();
+ ....
+ 1052  goog.ui.DatePicker.prototype.handleMenuKeyPress_ = function(event) {
+ 1053    // Prevent the grid keypress handler from catching the keypress event.
+ 1054:   event.stopPropagation();
+ 1055  
+ 1056    var el;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/dialog.js:
+ 1045  
+ 1046    if (close || hasHandler) {
+ 1047:     e.stopPropagation();
+ 1048      e.preventDefault();
+ 1049    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/keyboardshortcuthandler.js:
+  100  
+  101    /**
+  102:    * Whether to always stop propagation if a shortcut event is fired.
+  103     * @type {boolean}
+  104     * @private
+  105     */
+  106:   this.alwaysStopPropagation_ = false;
+  107  
+  108    /**
+  ...
+  295  
+  296  /**
+  297:  * Sets whether to always stop propagation for the event when fired. If false,
+  298:  * the propagation is stopped only if stopPropagation is called on either of the
+  299   * corresponding SHORT_CUT_TRIGGERED or SHORTCUT_PREFIX events. If true, the
+  300   * event is prevented from propagating beyond its target whenever it is fired.
+  301   * The default value is false.
+  302:  * @param {boolean} alwaysStopPropagation Whether to always call
+  303:  *     stopPropagation.
+  304   */
+  305: goog.ui.KeyboardShortcutHandler.prototype.setAlwaysStopPropagation = function(
+  306:     alwaysStopPropagation) {
+  307:   this.alwaysStopPropagation_ = alwaysStopPropagation;
+  308  };
+  309  
+  ...
+  312   * Returns whether the event will always be stopped from propagating beyond its
+  313   * target when a shortcut event is fired. The default value is false.
+  314:  * @see #setAlwaysStopPropagation
+  315:  * @return {boolean} Whether stopPropagation will always be called.
+  316   */
+  317: goog.ui.KeyboardShortcutHandler.prototype.getAlwaysStopPropagation =
+  318      function() {
+  319:   return this.alwaysStopPropagation_;
+  320  };
+  321  
+  ...
+  912      }
+  913  
+  914:     if (this.alwaysStopPropagation_) {
+  915:       event.stopPropagation();
+  916      }
+  917  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/media/flashobject.js:
+  506    // inconsistently:
+  507    //
+  508:   // 1) FF2 + linux: the flash plugin will stop the propagation of all events
+  509    // from the plugin to the browser.
+  510    // 2) FF3 + mac: the flash plugin will propagate events on the <embed> object
+  ...
+  526        this.getElement(),
+  527        goog.object.getValues(goog.events.EventType),
+  528:       goog.events.Event.stopPropagation);
+  529  };
+  530  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/menubutton.js:
+  877  
+  878    // Listen for document mousedown events in the capture phase, because
+  879:   // the target may stop propagation of the event in the bubble phase.
+  880    method.call(handler, this.getDomHelper().getDocument(),
+  881        goog.events.EventType.MOUSEDOWN, this.handleDocumentMouseDown, true);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/offlineinstalldialog.js:
+  620   * Should enable button action be performed immediately when the user presses
+  621   * the enter key anywhere on the dialog. This should be set to false if there
+  622:  * are other action handlers on the dialog that may stop propagation.
+  623   * @type {boolean}
+  624   * @protected
+  ...
+  772   * Should install button action be performed immediately when the user presses
+  773   * the enter key anywhere on the dialog. This should be set to false if there
+  774:  * are other action handlers on the dialog that may stop propagation.
+  775   * @type {boolean}
+  776   * @protected
+  ...
+  948   * Should upgrade button action be performed immediately when the user presses
+  949   * the enter key anywhere on the dialog. This should be set to false if there
+  950:  * are other action handlers on the dialog that may stop propagation.
+  951   * @type {boolean}
+  952   * @protected
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/plaintextspellchecker.js:
+  258   */
+  259  goog.ui.PlainTextSpellChecker.prototype.onDictionaryCharged_ = function(e) {
+  260:   e.stopPropagation();
+  261    this.eventHandler_.unlisten(this.handler_,
+  262        goog.spell.SpellCheck.EventType.READY, this.onDictionaryCharged_, true);
+  ...
+  469  
+  470      // Prevent document click handler from closing the menu.
+  471:     event.stopPropagation();
+  472    }
+  473  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupbase.js:
+  758        // Eat the escape key, but only if this popup was actually closed.
+  759        e.preventDefault();
+  760:       e.stopPropagation();
+  761      }
+  762    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupcolorpicker.js:
+  433    // TODO(user): Update the colorpicker to allow selection to be cleared
+  434    if (this.colorPicker_.getSelectedIndex() == -1) {
+  435:     e.stopPropagation();
+  436      return;
+  437    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupmenu.js:
+  513                      /** @type {number} */ (e.clientY));
+  514        e.preventDefault();
+  515:       e.stopPropagation();
+  516        return;
+  517      }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/richtextspellchecker.js:
+  225   */
+  226  goog.ui.RichTextSpellChecker.prototype.onDictionaryCharged_ = function(e) {
+  227:   e.stopPropagation();
+  228    goog.events.unlisten(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  229                         this.onDictionaryCharged_, true, this);
+  ...
+  617  
+  618      // Prevent document click handler from closing the menu.
+  619:     event.stopPropagation();
+  620    }
+  621  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/select.js:
+  121   * Handles {@link goog.ui.Component.EventType.ACTION} events dispatched by
+  122   * the menu item clicked by the user.  Updates the selection model, calls
+  123:  * the superclass implementation to hide the menu, stops the propagation of
+  124   * the event, and dispatches an ACTION event on behalf of the select control
+  125   * itself.  Overrides {@link goog.ui.MenuButton#handleMenuAction}.
+  ...
+  131    goog.base(this, 'handleMenuAction', e);
+  132  
+  133:   // NOTE(user): We should not stop propagation and then fire
+  134    // our own ACTION event. Fixing this without breaking anyone
+  135    // relying on this event is hard though.
+  136:   e.stopPropagation();
+  137    this.dispatchEvent(goog.ui.Component.EventType.ACTION);
+  138  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/zippy.js:
+  396      event.preventDefault();
+  397  
+  398:     event.stopPropagation();
+  399    }
+  400  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/third_party/closure/goog/mochikit/async/deferredlist.js:
+   52   *     input reports an error. The error result is passed to the
+   53   *     <code>DeferredList</code>'s error callback chain.
+   54:  * @param {boolean=} opt_consumeErrors When true, will stop propagation of the
+   55   *     error callback chain for input deferred objects. If the failing deferred
+   56   *     has a registered callback after this <code>DeferredList</code>, it will
+   ..
+  101  
+  102    /**
+  103:    * Whether to stop error propagation on the input Deferred objects. If the
+  104     * DeferredList sees an error from one of the Deferred inputs, the error will
+  105     * be captured, and the Deferred will be returned to success state with a null
+
+/Users/hossein/Desktop/XTK-modified/X/lib/pypng-0.0.9/html/_static/jquery.js:
+   24  while(i)ret[--i]=array[i];}return ret;},inArray:function(elem,array){for(var i=0,length=array.length;i<length;i++)if(array[i]===elem)return i;return-1;},merge:function(first,second){var i=0,elem,pos=first.length;if(jQuery.browser.msie){while(elem=second[i++])if(elem.nodeType!=8)first[pos++]=elem;}else
+   25  while(elem=second[i++])first[pos++]=elem;return first;},unique:function(array){var ret=[],done={};try{for(var i=0,length=array.length;i<length;i++){var id=jQuery.data(array[i]);if(!done[id]){done[id]=true;ret.push(array[i]);}}}catch(e){ret=array;}return ret;},grep:function(elems,callback,inv){var ret=[];for(var i=0,length=elems.length;i<length;i++)if(!inv!=!callback(elems[i],i))ret.push(elems[i]);return ret;},map:function(elems,callback){var ret=[];for(var i=0,length=elems.length;i<length;i++){var value=callback(elems[i],i);if(value!=null)ret[ret.length]=value;}return ret.concat.apply([],ret);}});var userAgent=navigator.userAgent.toLowerCase();jQuery.browser={version:(userAgent.match(/.+(?:rv|it|ra|ie)[\/: ]([\d.]+)/)||[])[1],safari:/webkit/.test(userAgent),opera:/opera/.test(userAgent),msie:/msie/.test(userAgent)&&!/opera/.test(userAgent),mozilla:/mozilla/.test(userAgent)&&!/(compatible|webkit)/.test(userAgent)};var styleFloat=jQuery.browser.msie?"styleFloat":"cssFloat";jQuery.extend({boxModel:!jQuery.browser.msie||document.compatMode=="CSS1Compat",props:{"for":"htmlFor","class":"className","float":styleFloat,cssFloat:styleFloat,styleFloat:styleFloat,readonly:"readOnly",maxlength:"maxLength",cellspacing:"cellSpacing"}});jQuery.each({parent:function(elem){return elem.parentNode;},parents:function(elem){return jQuery.dir(elem,"parentNode");},next:function(elem){return jQuery.nth(elem,2,"nextSibling");},prev:function(elem){return jQuery.nth(elem,2,"previousSibling");},nextAll:function(elem){return jQuery.dir(elem,"nextSibling");},prevAll:function(elem){return jQuery.dir(elem,"previousSibling");},siblings:function(elem){return jQuery.sibling(elem.parentNode.firstChild,elem);},children:function(elem){return jQuery.sibling(elem.firstChild);},contents:function(elem){return jQuery.nodeName(elem,"iframe")?elem.contentDocument||elem.contentWindow.document:jQuery.makeArray(elem.childNodes);}},function(name,fn){jQuery.fn[name]=function(selector){var ret=jQuery.map(this,fn);if(selector&&typeof selector=="string")ret=jQuery.multiFilter(selector,ret);return this.pushStack(jQuery.unique(ret));};});jQuery.each({appendTo:"append",prependTo:"prepend",insertBefore:"before",insertAfter:"after",replaceAll:"replaceWith"},function(name,original){jQuery.fn[name]=function(){var args=arguments;return this.each(function(){for(var i=0,length=args.length;i<length;i++)jQuery(args[i])[original](this);});};});jQuery.each({removeAttr:function(name){jQuery.attr(this,name,"");if(this.nodeType==1)this.removeAttribute(name);},addClass:function(classNames){jQuery.className.add(this,classNames);},removeClass:function(classNames){jQuery.className.remove(this,classNames);},toggleClass:function(classNames){jQuery.className[jQuery.className.has(this,classNames)?"remove":"add"](this,classNames);},remove:function(selector){if(!selector||jQuery.filter(selector,[this]).r.length){jQuery("*",this).add(this).each(function(){jQuery.event.remove(this);jQuery.removeData(this);});if(this.parentNode)this.parentNode.removeChild(this);}},empty:function(){jQuery(">*",this).remove();while(this.firstChild)this.removeChild(this.firstChild);}},function(name,fn){jQuery.fn[name]=function(){return this.each(fn,arguments);};});jQuery.each(["Height","Width"],function(i,name){var type=name.toLowerCase();jQuery.fn[type]=function(size){return this[0]==window?jQuery.browser.opera&&document.body["client"+name]||jQuery.browser.safari&&window["inner"+name]||document.compatMode=="CSS1Compat"&&document.documentElement["client"+name]||document.body["client"+name]:this[0]==document?Math.max(Math.max(document.body["scroll"+name],document.documentElement["scroll"+name]),Math.max(document.body["offset"+name],document.documentElement["offset"+name])):size==undefined?(this.length?jQuery.css(this[0],type):null):this.css(type,size.constructor==String?size:size+"px");};});function num(elem,prop){return elem[0]&&parseInt(jQuery.curCSS(elem[0],prop,true),10)||0;}var chars=jQuery.browser.safari&&parseInt(jQuery.browser.version)<417?"(?:[\\w*_-]|\\\\.)":"(?:[\\w\u0128-\uFFFF*_-]|\\\\.)",quickChild=new RegExp("^>\\s*("+chars+"+)"),quickID=new RegExp("^("+chars+"+)(#)("+chars+"+)"),quickClass=new RegExp("^([#.]?)("+chars+"*)");jQuery.extend({expr:{"":function(a,i,m){return m[2]=="*"||jQuery.nodeName(a,m[2]);},"#":function(a,i,m){return a.getAttribute("id")==m[2];},":":{lt:function(a,i,m){return i<m[3]-0;},gt:function(a,i,m){return i>m[3]-0;},nth:function(a,i,m){return m[3]-0==i;},eq:function(a,i,m){return m[3]-0==i;},first:function(a,i){return i==0;},last:function(a,i,m,r){return i==r.length-1;},even:function(a,i){return i%2==0;},odd:function(a,i){return i%2;},"first-child":function(a){return a.parentNode.getElementsByTagName("*")[0]==a;},"last-child":function(a){return jQuery.nth(a.parentNode.lastChild,1,"previousSibling")==a;},"only-child":function(a){return!jQuery.nth(a.parentNode.lastChild,2,"previousSibling");},parent:function(a){return a.firstChild;},empty:function(a){return!a.firstChild;},contains:function(a,i,m){return(a.textContent||a.innerText||jQuery(a).text()||"").indexOf(m[3])>=0;},visible:function(a){return"hidden"!=a.type&&jQuery.css(a,"display")!="none"&&jQuery.css(a,"visibility")!="hidden";},hidden:function(a){return"hidden"==a.type||jQuery.css(a,"display")=="none"||jQuery.css(a,"visibility")=="hidden";},enabled:function(a){return!a.disabled;},disabled:function(a){return a.disabled;},checked:function(a){return a.checked;},selected:function(a){return a.selected||jQuery.attr(a,"selected");},text:function(a){return"text"==a.type;},radio:function(a){return"radio"==a.type;},checkbox:function(a){return"checkbox"==a.type;},file:function(a){return"file"==a.type;},password:function(a){return"password"==a.type;},submit:function(a){return"submit"==a.type;},image:function(a){return"image"==a.type;},reset:function(a){return"reset"==a.type;},button:function(a){return"button"==a.type||jQuery.nodeName(a,"button");},input:function(a){return/input|select|textarea|button/i.test(a.nodeName);},has:function(a,i,m){return jQuery.find(m[3],a).length;},header:function(a){return/h\d/i.test(a.nodeName);},animated:function(a){return jQuery.grep(jQuery.timers,function(fn){return a==fn.elem;}).length;}}},parse:[/^(\[) *@?([\w-]+) *([!*$^~=]*) *('?"?)(.*?)\4 *\]/,/^(:)([\w-]+)\("?'?(.*?(\(.*?\))?[^(]*?)"?'?\)/,new RegExp("^([:.#]*)("+chars+"+)")],multiFilter:function(expr,elems,not){var old,cur=[];while(expr&&expr!=old){old=expr;var f=jQuery.filter(expr,elems,not);expr=f.t.replace(/^\s*,\s*/,"");cur=not?elems=f.r:jQuery.merge(cur,f.r);}return cur;},find:function(t,context){if(typeof t!="string")return[t];if(context&&context.nodeType!=1&&context.nodeType!=9)return[];context=context||document;var ret=[context],done=[],last,nodeName;while(t&&last!=t){var r=[];last=t;t=jQuery.trim(t);var foundToken=false,re=quickChild,m=re.exec(t);if(m){nodeName=m[1].toUpperCase();for(var i=0;ret[i];i++)for(var c=ret[i].firstChild;c;c=c.nextSibling)if(c.nodeType==1&&(nodeName=="*"||c.nodeName.toUpperCase()==nodeName))r.push(c);ret=r;t=t.replace(re,"");if(t.indexOf(" ")==0)continue;foundToken=true;}else{re=/^([>+~])\s*(\w*)/i;if((m=re.exec(t))!=null){r=[];var merge={};nodeName=m[2].toUpperCase();m=m[1];for(var j=0,rl=ret.length;j<rl;j++){var n=m=="~"||m=="+"?ret[j].nextSibling:ret[j].firstChild;for(;n;n=n.nextSibling)if(n.nodeType==1){var id=jQuery.data(n);if(m=="~"&&merge[id])break;if(!nodeName||n.nodeName.toUpperCase()==nodeName){if(m=="~")merge[id]=true;r.push(n);}if(m=="+")break;}}ret=r;t=jQuery.trim(t.replace(re,""));foundToken=true;}}if(t&&!foundToken){if(!t.indexOf(",")){if(context==ret[0])ret.shift();done=jQuery.merge(done,ret);r=ret=[context];t=" "+t.substr(1,t.length);}else{var re2=quickID;var m=re2.exec(t);if(m){m=[0,m[2],m[3],m[1]];}else{re2=quickClass;m=re2.exec(t);}m[2]=m[2].replace(/\\/g,"");var elem=ret[ret.length-1];if(m[1]=="#"&&elem&&elem.getElementById&&!jQuery.isXMLDoc(elem)){var oid=elem.getElementById(m[2]);if((jQuery.browser.msie||jQuery.browser.opera)&&oid&&typeof oid.id=="string"&&oid.id!=m[2])oid=jQuery('[@id="'+m[2]+'"]',elem)[0];ret=r=oid&&(!m[3]||jQuery.nodeName(oid,m[3]))?[oid]:[];}else{for(var i=0;ret[i];i++){var tag=m[1]=="#"&&m[3]?m[3]:m[1]!=""||m[0]==""?"*":m[2];if(tag=="*"&&ret[i].nodeName.toLowerCase()=="object")tag="param";r=jQuery.merge(r,ret[i].getElementsByTagName(tag));}if(m[1]==".")r=jQuery.classFilter(r,m[2]);if(m[1]=="#"){var tmp=[];for(var i=0;r[i];i++)if(r[i].getAttribute("id")==m[2]){tmp=[r[i]];break;}r=tmp;}ret=r;}t=t.replace(re2,"");}}if(t){var val=jQuery.filter(t,r);ret=r=val.r;t=jQuery.trim(val.t);}}if(t)ret=[];if(ret&&context==ret[0])ret.shift();done=jQuery.merge(done,ret);return done;},classFilter:function(r,m,not){m=" "+m+" ";var tmp=[];for(var i=0;r[i];i++){var pass=(" "+r[i].className+" ").indexOf(m)>=0;if(!not&&pass||not&&!pass)tmp.push(r[i]);}return tmp;},filter:function(t,r,not){var last;while(t&&t!=last){last=t;var p=jQuery.parse,m;for(var i=0;p[i];i++){m=p[i].exec(t);if(m){t=t.substring(m[0].length);m[2]=m[2].replace(/\\/g,"");break;}}if(!m)break;if(m[1]==":"&&m[2]=="not")r=isSimple.test(m[3])?jQuery.filter(m[3],r,true).r:jQuery(r).not(m[3]);else if(m[1]==".")r=jQuery.classFilter(r,m[2],not);else if(m[1]=="["){var tmp=[],type=m[3];for(var i=0,rl=r.length;i<rl;i++){var a=r[i],z=a[jQuery.props[m[2]]||m[2]];if(z==null||/href|src|selected/.test(m[2]))z=jQuery.attr(a,m[2])||'';if((type==""&&!!z||type=="="&&z==m[5]||type=="!="&&z!=m[5]||type=="^="&&z&&!z.indexOf(m[5])||type=="$="&&z.substr(z.length-m[5].length)==m[5]||(type=="*="||type=="~=")&&z.indexOf(m[5])>=0)^not)tmp.push(a);}r=tmp;}else if(m[1]==":"&&m[2]=="nth-child"){var merge={},tmp=[],test=/(-?)(\d*)n((?:\+|-)?\d*)/.exec(m[3]=="even"&&"2n"||m[3]=="odd"&&"2n+1"||!/\D/.test(m[3])&&"0n+"+m[3]||m[3]),first=(test[1]+(test[2]||1))-0,last=test[3]-0;for(var i=0,rl=r.length;i<rl;i++){var node=r[i],parentNode=node.parentNode,id=jQuery.data(parentNode);if(!merge[id]){var c=1;for(var n=parentNode.firstChild;n;n=n.nextSibling)if(n.nodeType==1)n.nodeIndex=c++;merge[id]=true;}var add=false;if(first==0){if(node.nodeIndex==last)add=true;}else if((node.nodeIndex-last)%first==0&&(node.nodeIndex-last)/first>=0)add=true;if(add^not)tmp.push(node);}r=tmp;}else{var fn=jQuery.expr[m[1]];if(typeof fn=="object")fn=fn[m[2]];if(typeof fn=="string")fn=eval("false||function(a,i){return "+fn+";}");r=jQuery.grep(r,function(elem,i){return fn(elem,i,m,r);},not);}}return{r:r,t:t};},dir:function(elem,dir){var matched=[],cur=elem[dir];while(cur&&cur!=document){if(cur.nodeType==1)matched.push(cur);cur=cur[dir];}return matched;},nth:function(cur,result,dir,elem){result=result||1;var num=0;for(;cur;cur=cur[dir])if(cur.nodeType==1&&++num==result)break;return cur;},sibling:function(n,elem){var r=[];for(;n;n=n.nextSibling){if(n.nodeType==1&&n!=elem)r.push(n);}return r;}});jQuery.event={add:function(elem,types,handler,data){if(elem.nodeType==3||elem.nodeType==8)return;if(jQuery.browser.msie&&elem.setInterval)elem=window;if(!handler.guid)handler.guid=this.guid++;if(data!=undefined){var fn=handler;handler=this.proxy(fn,function(){return fn.apply(this,arguments);});handler.data=data;}var events=jQuery.data(elem,"events")||jQuery.data(elem,"events",{}),handle=jQuery.data(elem,"handle")||jQuery.data(elem,"handle",function(){if(typeof jQuery!="undefined"&&!jQuery.event.triggered)return jQuery.event.handle.apply(arguments.callee.elem,arguments);});handle.elem=elem;jQuery.each(types.split(/\s+/),function(index,type){var parts=type.split(".");type=parts[0];handler.type=parts[1];var handlers=events[type];if(!handlers){handlers=events[type]={};if(!jQuery.event.special[type]||jQuery.event.special[type].setup.call(elem)===false){if(elem.addEventListener)elem.addEventListener(type,handle,false);else if(elem.attachEvent)elem.attachEvent("on"+type,handle);}}handlers[handler.guid]=handler;jQuery.event.global[type]=true;});elem=null;},guid:1,global:{},remove:function(elem,types,handler){if(elem.nodeType==3||elem.nodeType==8)return;var events=jQuery.data(elem,"events"),ret,index;if(events){if(types==undefined||(typeof types=="string"&&types.charAt(0)=="."))for(var type in events)this.remove(elem,type+(types||""));else{if(types.type){handler=types.handler;types=types.type;}jQuery.each(types.split(/\s+/),function(index,type){var parts=type.split(".");type=parts[0];if(events[type]){if(handler)delete events[type][handler.guid];else
+   26: for(handler in events[type])if(!parts[1]||events[type][handler].type==parts[1])delete events[type][handler];for(ret in events[type])break;if(!ret){if(!jQuery.event.special[type]||jQuery.event.special[type].teardown.call(elem)===false){if(elem.removeEventListener)elem.removeEventListener(type,jQuery.data(elem,"handle"),false);else if(elem.detachEvent)elem.detachEvent("on"+type,jQuery.data(elem,"handle"));}ret=null;delete events[type];}}});}for(ret in events)break;if(!ret){var handle=jQuery.data(elem,"handle");if(handle)handle.elem=null;jQuery.removeData(elem,"events");jQuery.removeData(elem,"handle");}}},trigger:function(type,data,elem,donative,extra){data=jQuery.makeArray(data);if(type.indexOf("!")>=0){type=type.slice(0,-1);var exclusive=true;}if(!elem){if(this.global[type])jQuery("*").add([window,document]).trigger(type,data);}else{if(elem.nodeType==3||elem.nodeType==8)return undefined;var val,ret,fn=jQuery.isFunction(elem[type]||null),event=!data[0]||!data[0].preventDefault;if(event){data.unshift({type:type,target:elem,preventDefault:function(){},stopPropagation:function(){},timeStamp:now()});data[0][expando]=true;}data[0].type=type;if(exclusive)data[0].exclusive=true;var handle=jQuery.data(elem,"handle");if(handle)val=handle.apply(elem,data);if((!fn||(jQuery.nodeName(elem,'a')&&type=="click"))&&elem["on"+type]&&elem["on"+type].apply(elem,data)===false)val=false;if(event)data.shift();if(extra&&jQuery.isFunction(extra)){ret=extra.apply(elem,val==null?data:data.concat(val));if(ret!==undefined)val=ret;}if(fn&&donative!==false&&val!==false&&!(jQuery.nodeName(elem,'a')&&type=="click")){this.triggered=true;try{elem[type]();}catch(e){}}this.triggered=false;}return val;},handle:function(event){var val,ret,namespace,all,handlers;event=arguments[0]=jQuery.event.fix(event||window.event);namespace=event.type.split(".");event.type=namespace[0];namespace=namespace[1];all=!namespace&&!event.exclusive;handlers=(jQuery.data(this,"events")||{})[event.type];for(var j in handlers){var handler=handlers[j];if(all||handler.type==namespace){event.handler=handler;event.data=handler.data;ret=handler.apply(this,arguments);if(val!==false)val=ret;if(ret===false){event.preventDefault();event.stopPropagation();}}}return val;},fix:function(event){if(event[expando]==true)return event;var originalEvent=event;event={originalEvent:originalEvent};var props="altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarget data detail eventPhase fromElement handler keyCode metaKey newValue originalTarget pageX pageY prevValue relatedNode relatedTarget screenX screenY shiftKey srcElement target timeStamp toElement type view wheelDelta which".split(" ");for(var i=props.length;i;i--)event[props[i]]=originalEvent[props[i]];event[expando]=true;event.preventDefault=function(){if(originalEvent.preventDefault)originalEvent.preventDefault();originalEvent.returnValue=false;};event.stopPropagation=function(){if(originalEvent.stopPropagation)originalEvent.stopPropagation();originalEvent.cancelBubble=true;};event.timeStamp=event.timeStamp||now();if(!event.target)event.target=event.srcElement||document;if(event.target.nodeType==3)event.target=event.target.parentNode;if(!event.relatedTarget&&event.fromElement)event.relatedTarget=event.fromElement==event.target?event.toElement:event.fromElement;if(event.pageX==null&&event.clientX!=null){var doc=document.documentElement,body=document.body;event.pageX=event.clientX+(doc&&doc.scrollLeft||body&&body.scrollLeft||0)-(doc.clientLeft||0);event.pageY=event.clientY+(doc&&doc.scrollTop||body&&body.scrollTop||0)-(doc.clientTop||0);}if(!event.which&&((event.charCode||event.charCode===0)?event.charCode:event.keyCode))event.which=event.charCode||event.keyCode;if(!event.metaKey&&event.ctrlKey)event.metaKey=event.ctrlKey;if(!event.which&&event.button)event.which=(event.button&1?1:(event.button&2?3:(event.button&4?2:0)));return event;},proxy:function(fn,proxy){proxy.guid=fn.guid=fn.guid||proxy.guid||this.guid++;return proxy;},special:{ready:{setup:function(){bindReady();return;},teardown:function(){return;}},mouseenter:{setup:function(){if(jQuery.browser.msie)return false;jQuery(this).bind("mouseover",jQuery.event.special.mouseenter.handler);return true;},teardown:function(){if(jQuery.browser.msie)return false;jQuery(this).unbind("mouseover",jQuery.event.special.mouseenter.handler);return true;},handler:function(event){if(withinElement(event,this))return true;event.type="mouseenter";return jQuery.event.handle.apply(this,arguments);}},mouseleave:{setup:function(){if(jQuery.browser.msie)return false;jQuery(this).bind("mouseout",jQuery.event.special.mouseleave.handler);return true;},teardown:function(){if(jQuery.browser.msie)return false;jQuery(this).unbind("mouseout",jQuery.event.special.mouseleave.handler);return true;},handler:function(event){if(withinElement(event,this))return true;event.type="mouseleave";return jQuery.event.handle.apply(this,arguments);}}}};jQuery.fn.extend({bind:function(type,data,fn){return type=="unload"?this.one(type,data,fn):this.each(function(){jQuery.event.add(this,type,fn||data,fn&&data);});},one:function(type,data,fn){var one=jQuery.event.proxy(fn||data,function(event){jQuery(this).unbind(event,one);return(fn||data).apply(this,arguments);});return this.each(function(){jQuery.event.add(this,type,one,fn&&data);});},unbind:function(type,fn){return this.each(function(){jQuery.event.remove(this,type,fn);});},trigger:function(type,data,fn){return this.each(function(){jQuery.event.trigger(type,data,this,true,fn);});},triggerHandler:function(type,data,fn){return this[0]&&jQuery.event.trigger(type,data,this[0],false,fn);},toggle:function(fn){var args=arguments,i=1;while(i<args.length)jQuery.event.proxy(fn,args[i++]);return this.click(jQuery.event.proxy(fn,function(event){this.lastToggle=(this.lastToggle||0)%i;event.preventDefault();return args[this.lastToggle++].apply(this,arguments)||false;}));},hover:function(fnOver,fnOut){return this.bind('mouseenter',fnOver).bind('mouseleave',fnOut);},ready:function(fn){bindReady();if(jQuery.isReady)fn.call(document,jQuery);else
+   27  jQuery.readyList.push(function(){return fn.call(this,jQuery);});return this;}});jQuery.extend({isReady:false,readyList:[],ready:function(){if(!jQuery.isReady){jQuery.isReady=true;if(jQuery.readyList){jQuery.each(jQuery.readyList,function(){this.call(document);});jQuery.readyList=null;}jQuery(document).triggerHandler("ready");}}});var readyBound=false;function bindReady(){if(readyBound)return;readyBound=true;if(document.addEventListener&&!jQuery.browser.opera)document.addEventListener("DOMContentLoaded",jQuery.ready,false);if(jQuery.browser.msie&&window==top)(function(){if(jQuery.isReady)return;try{document.documentElement.doScroll("left");}catch(error){setTimeout(arguments.callee,0);return;}jQuery.ready();})();if(jQuery.browser.opera)document.addEventListener("DOMContentLoaded",function(){if(jQuery.isReady)return;for(var i=0;i<document.styleSheets.length;i++)if(document.styleSheets[i].disabled){setTimeout(arguments.callee,0);return;}jQuery.ready();},false);if(jQuery.browser.safari){var numStyles;(function(){if(jQuery.isReady)return;if(document.readyState!="loaded"&&document.readyState!="complete"){setTimeout(arguments.callee,0);return;}if(numStyles===undefined)numStyles=jQuery("style, link[rel=stylesheet]").length;if(document.styleSheets.length!=numStyles){setTimeout(arguments.callee,0);return;}jQuery.ready();})();}jQuery.event.add(window,"load",jQuery.ready);}jQuery.each(("blur,focus,load,resize,scroll,unload,click,dblclick,"+"mousedown,mouseup,mousemove,mouseover,mouseout,change,select,"+"submit,keydown,keypress,keyup,error").split(","),function(i,name){jQuery.fn[name]=function(fn){return fn?this.bind(name,fn):this.trigger(name);};});var withinElement=function(event,elem){var parent=event.relatedTarget;while(parent&&parent!=elem)try{parent=parent.parentNode;}catch(error){parent=elem;}return parent==elem;};jQuery(window).bind("unload",function(){jQuery("*").add(document).unbind();});jQuery.fn.extend({_load:jQuery.fn.load,load:function(url,params,callback){if(typeof url!='string')return this._load(url);var off=url.indexOf(" ");if(off>=0){var selector=url.slice(off,url.length);url=url.slice(0,off);}callback=callback||function(){};var type="GET";if(params)if(jQuery.isFunction(params)){callback=params;params=null;}else{params=jQuery.param(params);type="POST";}var self=this;jQuery.ajax({url:url,type:type,dataType:"html",data:params,complete:function(res,status){if(status=="success"||status=="notmodified")self.html(selector?jQuery("<div/>").append(res.responseText.replace(/<script(.|\s)*?\/script>/g,"")).find(selector):res.responseText);self.each(callback,[res.responseText,status,res]);}});return this;},serialize:function(){return jQuery.param(this.serializeArray());},serializeArray:function(){return this.map(function(){return jQuery.nodeName(this,"form")?jQuery.makeArray(this.elements):this;}).filter(function(){return this.name&&!this.disabled&&(this.checked||/select|textarea/i.test(this.nodeName)||/text|hidden|password/i.test(this.type));}).map(function(i,elem){var val=jQuery(this).val();return val==null?null:val.constructor==Array?jQuery.map(val,function(val,i){return{name:elem.name,value:val};}):{name:elem.name,value:val};}).get();}});jQuery.each("ajaxStart,ajaxStop,ajaxComplete,ajaxError,ajaxSuccess,ajaxSend".split(","),function(i,o){jQuery.fn[o]=function(f){return this.bind(o,f);};});var jsc=now();jQuery.extend({get:function(url,data,callback,type){if(jQuery.isFunction(data)){callback=data;data=null;}return jQuery.ajax({type:"GET",url:url,data:data,success:callback,dataType:type});},getScript:function(url,callback){return jQuery.get(url,null,callback,"script");},getJSON:function(url,data,callback){return jQuery.get(url,data,callback,"json");},post:function(url,data,callback,type){if(jQuery.isFunction(data)){callback=data;data={};}return jQuery.ajax({type:"POST",url:url,data:data,success:callback,dataType:type});},ajaxSetup:function(settings){jQuery.extend(jQuery.ajaxSettings,settings);},ajaxSettings:{url:location.href,global:true,type:"GET",timeout:0,contentType:"application/x-www-form-urlencoded",processData:true,async:true,data:null,username:null,password:null,accepts:{xml:"application/xml, text/xml",html:"text/html",script:"text/javascript, application/javascript",json:"application/json, text/javascript",text:"text/plain",_default:"*/*"}},lastModified:{},ajax:function(s){s=jQuery.extend(true,s,jQuery.extend(true,{},jQuery.ajaxSettings,s));var jsonp,jsre=/=\?(&|$)/g,status,data,type=s.type.toUpperCase();if(s.data&&s.processData&&typeof s.data!="string")s.data=jQuery.param(s.data);if(s.dataType=="jsonp"){if(type=="GET"){if(!s.url.match(jsre))s.url+=(s.url.match(/\?/)?"&":"?")+(s.jsonp||"callback")+"=?";}else if(!s.data||!s.data.match(jsre))s.data=(s.data?s.data+"&":"")+(s.jsonp||"callback")+"=?";s.dataType="json";}if(s.dataType=="json"&&(s.data&&s.data.match(jsre)||s.url.match(jsre))){jsonp="jsonp"+jsc++;if(s.data)s.data=(s.data+"").replace(jsre,"="+jsonp+"$1");s.url=s.url.replace(jsre,"="+jsonp+"$1");s.dataType="script";window[jsonp]=function(tmp){data=tmp;success();complete();window[jsonp]=undefined;try{delete window[jsonp];}catch(e){}if(head)head.removeChild(script);};}if(s.dataType=="script"&&s.cache==null)s.cache=false;if(s.cache===false&&type=="GET"){var ts=now();var ret=s.url.replace(/(\?|&)_=.*?(&|$)/,"$1_="+ts+"$2");s.url=ret+((ret==s.url)?(s.url.match(/\?/)?"&":"?")+"_="+ts:"");}if(s.data&&type=="GET"){s.url+=(s.url.match(/\?/)?"&":"?")+s.data;s.data=null;}if(s.global&&!jQuery.active++)jQuery.event.trigger("ajaxStart");var remote=/^(?:\w+:)?\/\/([^\/?#]+)/;if(s.dataType=="script"&&type=="GET"&&remote.test(s.url)&&remote.exec(s.url)[1]!=location.host){var head=document.getElementsByTagName("head")[0];var script=document.createElement("script");script.src=s.url;if(s.scriptCharset)script.charset=s.scriptCharset;if(!jsonp){var done=false;script.onload=script.onreadystatechange=function(){if(!done&&(!this.readyState||this.readyState=="loaded"||this.readyState=="complete")){done=true;success();complete();head.removeChild(script);}};}head.appendChild(script);return undefined;}var requestDone=false;var xhr=window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):new XMLHttpRequest();if(s.username)xhr.open(type,s.url,s.async,s.username,s.password);else
+   28  xhr.open(type,s.url,s.async);try{if(s.data)xhr.setRequestHeader("Content-Type",s.contentType);if(s.ifModified)xhr.setRequestHeader("If-Modified-Since",jQuery.lastModified[s.url]||"Thu, 01 Jan 1970 00:00:00 GMT");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("Accept",s.dataType&&s.accepts[s.dataType]?s.accepts[s.dataType]+", */*":s.accepts._default);}catch(e){}if(s.beforeSend&&s.beforeSend(xhr,s)===false){s.global&&jQuery.active--;xhr.abort();return false;}if(s.global)jQuery.event.trigger("ajaxSend",[xhr,s]);var onreadystatechange=function(isTimeout){if(!requestDone&&xhr&&(xhr.readyState==4||isTimeout=="timeout")){requestDone=true;if(ival){clearInterval(ival);ival=null;}status=isTimeout=="timeout"&&"timeout"||!jQuery.httpSuccess(xhr)&&"error"||s.ifModified&&jQuery.httpNotModified(xhr,s.url)&&"notmodified"||"success";if(status=="success"){try{data=jQuery.httpData(xhr,s.dataType,s.dataFilter);}catch(e){status="parsererror";}}if(status=="success"){var modRes;try{modRes=xhr.getResponseHeader("Last-Modified");}catch(e){}if(s.ifModified&&modRes)jQuery.lastModified[s.url]=modRes;if(!jsonp)success();}else
+
+/Users/hossein/Desktop/XTK-modified/X/objects/volume.js:
+  718        this._volumeRendering = volumeRendering;
+  719  
+  720:       // fire a modified event without propagation for fast switching
+  721        this.modified(false);
+  722  
+  ...
+  742  
+  743      // here we have to only set specific children to visible using
+  744:     // the modified function without down propagation..
+  745      this._visible = visible;
+  746  
+  ...
+  905      this._indexX = indexX;
+  906  
+  907:     // fire a modified event without propagation for fast slicing
+  908      this.modified(false);
+  909  
+  ...
+  940      this._indexY = indexY;
+  941  
+  942:     // fire a modified event without propagation for fast slicing
+  943      this.modified(false);
+  944  
+  ...
+  975      this._indexZ = indexZ;
+  976  
+  977:     // fire a modified event without propagation for fast slicing
+  978      this.modified(false);
+  979  
+
+/Users/hossein/Desktop/XTK-modified/X/utils/xtk.js:
+   54  function Ab(a){var b;if(!(b=zb[a])){b=0;for(var c=String(tb).replace(/^[\s\xa0]+|[\s\xa0]+$/g,"").split("."),e=String(a).replace(/^[\s\xa0]+|[\s\xa0]+$/g,"").split("."),d=Math.max(c.length,e.length),f=0;0==b&&f<d;f++){var g=c[f]||"",h=e[f]||"",l=RegExp("(\\d*)(\\D*)","g"),j=RegExp("(\\d*)(\\D*)","g");do{var k=l.exec(g)||["","",""],p=j.exec(h)||["","",""];if(0==k[0].length&&0==p[0].length)break;b=((0==k[1].length?0:parseInt(k[1],10))<(0==p[1].length?0:parseInt(p[1],10))?-1:(0==k[1].length?0:parseInt(k[1],
+   55  10))>(0==p[1].length?0:parseInt(p[1],10))?1:0)||((0==k[2].length)<(0==p[2].length)?-1:(0==k[2].length)>(0==p[2].length)?1:0)||(k[2]<p[2]?-1:k[2]>p[2]?1:0)}while(0==b)}b=zb[a]=0<=b}return b}var Bb=fa.document,Cb=!Bb||!K?n:sb()||("CSS1Compat"==Bb.compatMode?parseInt(tb,10):5);var Db=!K||K&&9<=Cb,Eb=K&&!Ab("9");!mb||Ab("528");jb&&Ab("1.9b")||K&&Ab("8")||ib&&Ab("9.5")||mb&&Ab("528");jb&&!Ab("8")||K&&Ab("9");var Fb=Array.prototype,Gb=Fb.indexOf?function(a,b,c){return Fb.indexOf.call(a,b,c)}:function(a,b,c){c=c==s?0:0>c?Math.max(0,a.length+c):c;if(na(a))return!na(b)||1!=b.length?-1:a.indexOf(b,c);for(;c<a.length;c++)if(c in a&&a[c]===b)return c;return-1},Ib=Fb.forEach?function(a,b,c){Fb.forEach.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=na(a)?a.split(""):a,f=0;f<e;f++)f in d&&b.call(c,d[f],f,a)},Jb=Fb.map?function(a,b,c){return Fb.map.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=Array(e),f=
+   56: na(a)?a.split(""):a,g=0;g<e;g++)g in f&&(d[g]=b.call(c,f[g],g,a));return d},Kb=Fb.some?function(a,b,c){return Fb.some.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=na(a)?a.split(""):a,f=0;f<e;f++)if(f in d&&b.call(c,d[f],f,a))return q;return t};function Lb(a,b){var c=Gb(a,b);0<=c&&Fb.splice.call(a,c,1)}function Mb(a,b,c){return 2>=arguments.length?Fb.slice.call(a,b):Fb.slice.call(a,b,c)};function Nb(){0!=Ob&&(this.xl=Error().stack,qa(this))}var Ob=0;function Pb(a,b){this.type=a;this.currentTarget=this.target=b}v=Pb.prototype;v.wc=t;v.defaultPrevented=t;v.xe=q;v.stopPropagation=function(){this.wc=q};v.preventDefault=function(){this.defaultPrevented=q;this.xe=t};function Qb(a){Qb[" "](a);return a}Qb[" "]=ga;function Ub(a,b){a&&this.Ba(a,b)}C(Ub,Pb);v=Ub.prototype;v.target=s;v.relatedTarget=s;v.offsetX=0;v.offsetY=0;v.clientX=0;v.clientY=0;v.screenX=0;v.screenY=0;v.button=0;v.keyCode=0;v.charCode=0;v.ctrlKey=t;v.altKey=t;v.shiftKey=t;v.metaKey=t;v.Wj=t;v.sb=s;
+   57  v.Ba=function(a,b){var c=this.type=a.type;Pb.call(this,c);this.target=a.target||a.srcElement;this.currentTarget=b;var e=a.relatedTarget;if(e){if(jb){var d;a:{try{Qb(e.nodeName);d=q;break a}catch(f){}d=t}d||(e=s)}}else"mouseover"==c?e=a.fromElement:"mouseout"==c&&(e=a.toElement);this.relatedTarget=e;this.offsetX=mb||a.offsetX!==n?a.offsetX:a.layerX;this.offsetY=mb||a.offsetY!==n?a.offsetY:a.layerY;this.clientX=a.clientX!==n?a.clientX:a.pageX;this.clientY=a.clientY!==n?a.clientY:a.pageY;this.screenX=
+   58: a.screenX||0;this.screenY=a.screenY||0;this.button=a.button;this.keyCode=a.keyCode||0;this.charCode=a.charCode||("keypress"==c?a.keyCode:0);this.ctrlKey=a.ctrlKey;this.altKey=a.altKey;this.shiftKey=a.shiftKey;this.metaKey=a.metaKey;this.Wj=ab?a.metaKey:a.ctrlKey;this.state=a.state;this.sb=a;a.defaultPrevented&&this.preventDefault();delete this.wc};v.stopPropagation=function(){Ub.u.stopPropagation.call(this);this.sb.stopPropagation?this.sb.stopPropagation():this.sb.cancelBubble=q};
+   59  v.preventDefault=function(){Ub.u.preventDefault.call(this);var a=this.sb;if(a.preventDefault)a.preventDefault();else if(a.returnValue=t,Eb)try{if(a.ctrlKey||112<=a.keyCode&&123>=a.keyCode)a.keyCode=-1}catch(b){}};v.Gi=u("sb");var Vb={},Wb={},Xb={},Yb={};function L(a,b,c,e,d){if(ja(b)){for(var f=0;f<b.length;f++)L(a,b[f],c,e,d);return s}a=Zb(a,b,c,t,e,d);b=a.key;Vb[b]=a;return b}
+   60  function Zb(a,b,c,e,d,f){b||m(Error("Invalid event type"));d=!!d;var g=Wb;b in g||(g[b]={oa:0,Na:0});g=g[b];d in g||(g[d]={oa:0,Na:0},g.oa++);var g=g[d],h=qa(a),l;g.Na++;if(g[h]){l=g[h];for(var j=0;j<l.length;j++)if(g=l[j],g.bc==c&&g.tf==f){if(g.xc)break;e||(l[j].ie=t);return l[j]}}else l=g[h]=[],g.oa++;var k=$b,p=Db?function(a){return k.call(p.src,p.bc,a)}:function(a){a=k.call(p.src,p.bc,a);if(!a)return a},j=p,g=new La;g.Ba(c,j,a,b,d,f);g.ie=e;j.src=a;j.bc=g;l.push(g);Xb[h]||(Xb[h]=[]);Xb[h].push(g);
+   ..
+  353  function Ug(a,b){a.Ee&&a.Ee.stop();a.re&&a.re.stop();if(b){if(!a.Ma&&a.Df()){a.H||m(Error("Caller must call setElement before trying to show the popup"));a.tb();var c=ee(a.H);a.Pi&&Bg(a.Ib,c,"keydown",a.rj,q);if(a.gi)if(Bg(a.Ib,c,"mousedown",a.hh,q),K){var e;try{e=c.activeElement}catch(d){}for(;e&&"IFRAME"==e.nodeName;){try{var f=e.contentDocument||e.contentWindow.document}catch(g){break}c=f;e=c.activeElement}Bg(a.Ib,c,"mousedown",a.hh,q);Bg(a.Ib,c,"deactivate",a.gh)}else Bg(a.Ib,c,"blur",a.gh);"toggle_display"==
+  354  a.$c?(a.H.style.visibility="visible",Fe(a.H,q)):"move_offscreen"==a.$c&&a.tb();a.Ma=q;a.Ee?(ac(a.Ee,"end",a.kh,t,a),a.Ee.play()):a.kh()}}else Vg(a)}v.tb=ga;function Vg(a,b){if(!a.Ma||!a.dispatchEvent({type:"beforehide",target:b}))return t;a.Ib&&a.Ib.Of();a.Ma=t;a.Wg=xa();a.re?(ac(a.re,"end",wa(a.Eg,b),t,a),a.re.play()):a.Eg(b);return q}v.Eg=function(a){"toggle_display"==this.$c?this.ek?Mg(this.Og,0,this):this.Og():"move_offscreen"==this.$c&&(this.H.style.top="-10000px");this.Hf(a)};
+  355: v.Og=function(){this.H.style.visibility="hidden";Fe(this.H,t)};v.Df=function(){return this.dispatchEvent("beforeshow")};v.kh=function(){this.wf=xa();this.Wg=-1;this.dispatchEvent("show")};v.Hf=function(a){this.dispatchEvent({type:"hide",target:a})};v.hh=function(a){a=a.target;!me(this.H,a)&&((!this.zg||me(this.zg,a))&&!(150>xa()-this.wf))&&Vg(this,a)};v.rj=function(a){27==a.keyCode&&Vg(this,a.target)&&(a.preventDefault(),a.stopPropagation())};
+  356  v.gh=function(a){if(this.wi){var b=ee(this.H);if(K||ib){if(a=b.activeElement,!a||me(this.H,a)||"BODY"==a.tagName)return}else if(a.target!=b)return;150>xa()-this.wf||Vg(this)}};function Wg(a,b){this.Xj=4;this.we=b||n;Tg.call(this,a)}C(Wg,Tg);Wg.prototype.tb=function(){if(this.we){var a=!this.Ma&&"move_offscreen"!=this.$c,b=this.t();a&&(b.style.visibility="hidden",Fe(b,q));this.we.tb(b,this.Xj,this.Kl);a&&Fe(b,t)}};function Xg(a){this.ga=new Bc;a&&this.df(a)}function Yg(a){var b=typeof a;return"object"==b&&a||"function"==b?"o"+qa(a):b.substr(0,1)+a}v=Xg.prototype;v.sf=function(){return this.ga.sf()};v.add=function(a){this.ga.set(Yg(a),a)};v.df=function(a){a=Ac(a);for(var b=a.length,c=0;c<b;c++)this.add(a[c])};v.Of=function(a){a=Ac(a);for(var b=a.length,c=0;c<b;c++)this.remove(a[c])};v.remove=function(a){return this.ga.remove(Yg(a))};v.clear=function(){this.ga.clear()};
+  357  v.contains=function(a){a=Yg(a);return Ec(this.ga.ga,a)};v.Tg=function(a){var b=new Xg;a=Ac(a);for(var c=0;c<a.length;c++){var e=a[c];this.contains(e)&&b.add(e)}return b};v.Dd=function(){return this.ga.Dd()};v.l=function(){return new Xg(this)};function Zg(a,b,c){this.$b=c||(a?ce(fe(a)):ce());Wg.call(this,this.$b.Wc("div",{style:"position:absolute;display:none;"}));this.of=new ae(1,1);this.je=new Xg;a&&$g(this,a);if(b!=s)if(a=this.t(),"textContent"in a)a.textContent=b;else if(a.firstChild&&3==a.firstChild.nodeType){for(;a.lastChild!=a.firstChild;)a.removeChild(a.lastChild);a.firstChild.data=b}else{for(;c=a.firstChild;)a.removeChild(c);a.appendChild(ee(a).createTextNode(String(b)))}}C(Zg,Wg);var ah=[];v=Zg.prototype;v.Sa=s;v.className="goog-tooltip";
+
+142 matches across 45 files
+
+
+Searching 1446 files for "propagation" (regex)
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/field.js:
+ 1356                                        e, stringKey, isModifierPressed)) {
+ 1357        e.preventDefault();
+ 1358:       // We don't call stopPropagation as some other handler outside of
+ 1359        // trogedit might need it.
+ 1360      }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/enterhandler.js:
+  126    if (field.firstChild == container && goog.editor.node.isEmpty(container)) {
+  127      e.preventDefault();
+  128:     // TODO(user): I think we probably don't need to stopPropagation here
+  129:     e.stopPropagation();
+  130    }
+  131  };
+  ...
+  295            goog.editor.plugins.Blockquote.SPLIT_COMMAND, cursorPosition);
+  296        if (split) {
+  297:         // TODO(user): I think we probably don't need to stopPropagation here
+  298          e.preventDefault();
+  299:         e.stopPropagation();
+  300        }
+  301  
+  ...
+  358        goog.editor.plugins.Blockquote.SPLIT_COMMAND, cursorPosition);
+  359    if (handled) {
+  360:     // TODO(user): I think we probably don't need to stopPropagation here
+  361      e.preventDefault();
+  362:     e.stopPropagation();
+  363    }
+  364  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/headerformatter.js:
+   88      // Prevent default isn't enough to cancel tab navigation in FF.
+   89      if (goog.userAgent.GECKO) {
+   90:       e.stopPropagation();
+   91      }
+   92      return true;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/editor/plugins/tagonenterhandler.js:
+  127      // Don't delete if it's the last node in the field and just has a BR.
+  128      e.preventDefault();
+  129:     // TODO(user): I think we probably don't need to stopPropagation here
+  130:     e.stopPropagation();
+  131    } else {
+  132      // Go ahead with deletion.
+  ...
+  284  
+  285    e.preventDefault();
+  286:   // TODO(user): I think we probably don't need to stopPropagation here
+  287:   e.stopPropagation();
+  288  };
+  289  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/actionhandler.js:
+  136    } finally {
+  137      // Stop propagating the event
+  138:     e.stopPropagation();
+  139    }
+  140  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/browserevent.js:
+  296      this.preventDefault();
+  297    }
+  298:   delete this.propagationStopped_;
+  299  };
+  300  
+  ...
+  349   * @override
+  350   */
+  351: goog.events.BrowserEvent.prototype.stopPropagation = function() {
+  352:   goog.events.BrowserEvent.superClass_.stopPropagation.call(this);
+  353:   if (this.event_.stopPropagation) {
+  354:     this.event_.stopPropagation();
+  355    } else {
+  356      this.event_.cancelBubble = true;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/event.js:
+   41  /**
+   42   * A base class for event objects, so that they can support preventDefault and
+   43:  * stopPropagation.
+   44   *
+   45   * @param {string} type Event Type.
+   ..
+   94   *     this package is strongly discouraged.
+   95   */
+   96: goog.events.Event.prototype.propagationStopped_ = false;
+   97  
+   98  
+   ..
+  117  
+  118  /**
+  119:  * Stops event propagation.
+  120   */
+  121: goog.events.Event.prototype.stopPropagation = function() {
+  122:   this.propagationStopped_ = true;
+  123  };
+  124  
+  ...
+  134  
+  135  /**
+  136:  * Stops the propagation of the event. It is equivalent to
+  137:  * {@code e.stopPropagation()}, but can be used as the callback argument of
+  138   * {@link goog.events.listen} without declaring another function.
+  139   * @param {!goog.events.Event} e An event.
+  140   */
+  141: goog.events.Event.stopPropagation = function(e) {
+  142:   e.stopPropagation();
+  143  };
+  144  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/events.js:
+   39   * @supported IE6+, FF1.5+, WebKit, Opera.
+   40   * @see ../demos/events.html
+   41:  * @see ../demos/event-propagation.html
+   42   * @see ../demos/stopevent.html
+   43   */
+   ..
+  976   * If any of the listeners returns false OR calls preventDefault then this
+  977   * function will return false.  If one of the capture listeners calls
+  978:  * stopPropagation, then the bubble listeners won't fire.
+  979   *
+  980   * @param {goog.events.Listenable|goog.events.EventTarget} src The
+  ...
+ 1012  
+ 1013    // If accepting a string or object, create a custom event object so that
+ 1014:   // preventDefault and stopPropagation work with the event.
+ 1015    if (goog.isString(e)) {
+ 1016      e = new goog.events.Event(e, src);
+ ....
+ 1041      // Call capture listeners
+ 1042      for (var i = ancestors.length - 1;
+ 1043:          !e.propagationStopped_ && i >= 0 && targetsMap.remaining_;
+ 1044           i--) {
+ 1045        e.currentTarget = ancestors[i];
+ ....
+ 1058  
+ 1059        // Call bubble listeners
+ 1060:       for (var i = 0; !e.propagationStopped_ && i < ancestors.length &&
+ 1061             targetsMap.remaining_;
+ 1062             i++) {
+ ....
+ 1071  
+ 1072        for (var current = src;
+ 1073:            !e.propagationStopped_ && current && targetsMap.remaining_;
+ 1074             current = current.getParentEventTarget()) {
+ 1075          e.currentTarget = current;
+ ....
+ 1123    map = map[type];
+ 1124    var retval, targetsMap;
+ 1125:   // Synthesize event propagation if the browser does not support W3C
+ 1126    // event model.
+ 1127    if (!goog.events.BrowserFeature.HAS_W3C_EVENT_SUPPORT) {
+ ....
+ 1161          // Call capture listeners
+ 1162          for (var i = ancestors.length - 1;
+ 1163:              !evt.propagationStopped_ && i >= 0 && targetsMap.remaining_;
+ 1164               i--) {
+ 1165            evt.currentTarget = ancestors[i];
+ ....
+ 1174            // Call bubble listeners
+ 1175            for (var i = 0;
+ 1176:                !evt.propagationStopped_ && i < ancestors.length &&
+ 1177                 targetsMap.remaining_;
+ 1178                 i++) {
+ ....
+ 1184  
+ 1185        } else {
+ 1186:         // Bubbling, let IE handle the propagation.
+ 1187          retval = goog.events.fireListener(listener, evt);
+ 1188        }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/eventtarget.js:
+   50   * </ul>
+   51   *
+   52:  * <p>Unless propagation is stopped, an event dispatched by an EventTarget
+   53   * will bubble to the parent returned by <code>getParentEventTarget</code>.
+   54   * To set the parent, call <code>setParentEventTarget</code> or override
+   ..
+  493  
+  494    // If accepting a string or object, create a custom event object so that
+  495:   // preventDefault and stopPropagation work with the event.
+  496    if (goog.isString(e)) {
+  497      e = new goog.events.Event(e, target);
+  ...
+  508    // Executes all capture listeners on the ancestors, if any.
+  509    if (opt_ancestorsTree) {
+  510:     for (var i = opt_ancestorsTree.length - 1; !e.propagationStopped_ && i >= 0;
+  511           i--) {
+  512        currentTarget = e.currentTarget = opt_ancestorsTree[i];
+  ...
+  516  
+  517    // Executes capture and bubble listeners on the target.
+  518:   if (!e.propagationStopped_) {
+  519      currentTarget = e.currentTarget = target;
+  520      rv = currentTarget.fireListeners(type, true, e) && rv;
+  521:     if (!e.propagationStopped_) {
+  522        rv = currentTarget.fireListeners(type, false, e) && rv;
+  523      }
+  ...
+  526    // Executes all bubble listeners on the ancestors, if any.
+  527    if (opt_ancestorsTree) {
+  528:     for (i = 0; !e.propagationStopped_ && i < opt_ancestorsTree.length; i++) {
+  529        currentTarget = e.currentTarget = opt_ancestorsTree[i];
+  530        rv = currentTarget.fireListeners(type, false, e) && rv;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/eventtargettester.js:
+  599  
+  600  
+  601: function testStopPropagation() {
+  602    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  603    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  604  
+  605:   listeners[0] = createListener(function(e) { e.stopPropagation(); });
+  606    listen(eventTargets[0], EventType.A, listeners[0]);
+  607    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  617  
+  618  
+  619: function testStopPropagation2() {
+  620    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  621    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  622  
+  623:   listeners[1] = createListener(function(e) { e.stopPropagation(); });
+  624    listen(eventTargets[0], EventType.A, listeners[0]);
+  625    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  635  
+  636  
+  637: function testStopPropagation3() {
+  638    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  639    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  640  
+  641:   listeners[2] = createListener(function(e) { e.stopPropagation(); });
+  642    listen(eventTargets[0], EventType.A, listeners[0]);
+  643    listen(eventTargets[0], EventType.A, listeners[1]);
+  ...
+  654  
+  655  
+  656: function testStopPropagationAtCapture() {
+  657    eventTargets[0].setParentEventTarget(eventTargets[1]);
+  658    eventTargets[1].setParentEventTarget(eventTargets[2]);
+  659  
+  660:   listeners[0] = createListener(function(e) { e.stopPropagation(); });
+  661    listen(eventTargets[2], EventType.A, listeners[0], true);
+  662    listen(eventTargets[1], EventType.A, listeners[1], true);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/filedrophandler.js:
+   91   * always want to prevent default actions, e.g. when the user drags text or
+   92   * links on a text area we should not prevent the browser default action that
+   93:  * inserts the text in the text area. It is also necessary to stop propagation
+   94   * when handling drag events on the element to prevent them from propagating
+   95   * to the document.
+   ..
+  192      // the document. Both lines are needed! (See comment above).
+  193      e.preventDefault();
+  194:     e.stopPropagation();
+  195      // Allow the drop on the drop zone.
+  196      var dt = e.getBrowserEvent().dataTransfer;
+  ...
+  214      // the document. Both lines are needed! (See comment above).
+  215      e.preventDefault();
+  216:     e.stopPropagation();
+  217      // Dispatch DROP event.
+  218      this.dispatch_(e);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/events/listenable.js:
+  158   * If any of the listeners returns false OR calls preventDefault then this
+  159   * function will return false.  If one of the capture listeners calls
+  160:  * stopPropagation, then the bubble listeners won't fire.
+  161   *
+  162   * @param {goog.events.EventLike} e Event object.
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/gears/workerchannel.js:
+  136  
+  137    e.preventDefault();
+  138:   e.stopPropagation();
+  139  };
+  140  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/gears/workerpool.js:
+   96   * @param {function(!GearsErrorObject):boolean} fn An error handler function
+   97   *     that gets passed an error object with message and line number attributes.
+   98:  *     Returns whether the error was handled. If true stops propagation.
+   99   * @param {Object=} opt_handler This object for the function.
+  100   */
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/testing/events/events.js:
+   78   *     this package is strongly discouraged.
+   79   */
+   80: goog.testing.events.Event.prototype.propagationStopped_ = false;
+   81  
+   82  
+   ..
+   95  
+   96  /** @override */
+   97: goog.testing.events.Event.prototype.stopPropagation = function() {
+   98:   this.propagationStopped_ = true;
+   99  };
+  100  
+  ...
+  563    // dispatch capturing listeners
+  564    for (var j = ancestors.length - 1;
+  565:        j >= 0 && !event.propagationStopped_;
+  566         j--) {
+  567      goog.events.fireListeners(ancestors[j], event.type, true,
+  ...
+  571    // dispatch bubbling listeners
+  572    for (var j = 0;
+  573:        j < ancestors.length && !event.propagationStopped_;
+  574         j++) {
+  575      goog.events.fireListeners(ancestors[j], event.type, false,
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/abstractspellchecker.js:
+  946  goog.ui.AbstractSpellChecker.prototype.blockReadyEvents = function() {
+  947    goog.events.listen(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  948:       goog.events.Event.stopPropagation, true);
+  949  };
+  950  
+  ...
+  959  goog.ui.AbstractSpellChecker.prototype.unblockReadyEvents = function() {
+  960    goog.events.unlisten(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  961:       goog.events.Event.stopPropagation, true);
+  962  };
+  963  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/ac/inputhandler.js:
+  819          if (this.ac_.selectHilited()) {
+  820            e.preventDefault();
+  821:           e.stopPropagation();
+  822            return true;
+  823          }
+  ...
+  832          this.ac_.dismiss();
+  833          e.preventDefault();
+  834:         e.stopPropagation();
+  835          return true;
+  836        }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/ac/renderer.js:
+  949      }));
+  950    }
+  951:   e.stopPropagation();
+  952  };
+  953  
+  ...
+  959   */
+  960  goog.ui.ac.Renderer.prototype.handleMouseDown_ = function(e) {
+  961:   e.stopPropagation();
+  962    e.preventDefault();
+  963  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/activitymonitor.js:
+   44   * @param {boolean=} opt_useBubble Whether to use the bubble phase to listen for
+   45   *     events. By default listens on the capture phase so that it won't miss
+   46:  *     events that get stopPropagation/cancelBubble'd. However, this can cause
+   47   *     problems in IE8 if the page loads multiple scripts that include the
+   48   *     closure event handling code.
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/attachablemenu.js:
+  370    e.preventDefault();
+  371  
+  372:   // Stop propagation to prevent application level keyboard shortcuts from
+  373    // firing.
+  374:   e.stopPropagation();
+  375  
+  376    this.dispatchEvent(e);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/charpicker.js:
+  474    this.keyHandler_ = new goog.events.KeyHandler(this.input_.getElement());
+  475  
+  476:   // Stop the propagation of ACTION events at menu and submenu buttons.
+  477    // If stopped at capture phase, the button will not be set to normal state.
+  478    // If not stopped, the user widget will receive the event, which is
+  ...
+  483            this.menubutton_,
+  484            goog.ui.Component.EventType.ACTION,
+  485:           goog.events.Event.stopPropagation).
+  486        listen(
+  487            this.submenubutton_,
+  488            goog.ui.Component.EventType.ACTION,
+  489:           goog.events.Event.stopPropagation).
+  490        listen(
+  491            this,
+  ...
+  567      this.modifyGridWithItems_(this.grid_, this.items, itempos);
+  568    }
+  569:   e.stopPropagation();
+  570  };
+  571  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/checkbox.js:
+  240   */
+  241  goog.ui.Checkbox.prototype.handleClickOrSpace_ = function(e) {
+  242:   e.stopPropagation();
+  243    var eventType = this.checked_ ? goog.ui.Component.EventType.UNCHECK :
+  244        goog.ui.Component.EventType.CHECK;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/colormenubutton.js:
+  170   * Handles {@link goog.ui.Component.EventType.ACTION} events dispatched by
+  171   * the menu item clicked by the user.  Updates the button, calls the superclass
+  172:  * implementation to hide the menu, stops the propagation of the event, and
+  173   * dispatches an ACTION event on behalf of the button itself.  Overrides
+  174   * {@link goog.ui.MenuButton#handleMenuAction}.
+  ...
+  185    }
+  186    goog.ui.ColorMenuButton.superClass_.handleMenuAction.call(this, e);
+  187:   e.stopPropagation();
+  188    this.dispatchEvent(goog.ui.Component.EventType.ACTION);
+  189  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/colorpicker.js:
+  279   */
+  280  goog.ui.ColorPicker.prototype.onColorPaletteAction_ = function(e) {
+  281:   e.stopPropagation();
+  282    this.dispatchEvent(goog.ui.ColorPicker.EventType.CHANGE);
+  283  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/combobox.js:
+  647    }
+  648    // Stop the event from propagating outside of the combo box
+  649:   e.stopPropagation();
+  650  };
+  651  
+  ...
+  673    this.logger_.info('onMenuSelected_()');
+  674    var item = /** @type {!goog.ui.MenuItem} */ (e.target);
+  675:   // Stop propagation of the original event and redispatch to allow the menu
+  676    // select to be cancelled at this level. i.e. if a menu item should cause
+  677    // some behavior such as a user prompt instead of assigning the caption as
+  ...
+  687      this.dismiss();
+  688    }
+  689:   e.stopPropagation();
+  690  };
+  691  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/component.js:
+   71  
+   72  /**
+   73:  * Common events fired by components so that event propagation is useful.  Not
+   74   * all components are expected to dispatch or listen for all event types.
+   75   * Events dispatched before a state transition should be cancelable to prevent
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/container.js:
+  711        this.handleKeyEventInternal(e)) {
+  712      e.preventDefault();
+  713:     e.stopPropagation();
+  714      return true;
+  715    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/control.js:
+ 1357        this.handleKeyEventInternal(e)) {
+ 1358      e.preventDefault();
+ 1359:     e.stopPropagation();
+ 1360      return true;
+ 1361    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/datepicker.js:
+  912   */
+  913  goog.ui.DatePicker.prototype.showMonthMenu_ = function(event) {
+  914:   event.stopPropagation();
+  915  
+  916    var list = [];
+  ...
+  930   */
+  931  goog.ui.DatePicker.prototype.showYearMenu_ = function(event) {
+  932:   event.stopPropagation();
+  933  
+  934    var list = [];
+  ...
+ 1035   */
+ 1036  goog.ui.DatePicker.prototype.handleMenuClick_ = function(event) {
+ 1037:   event.stopPropagation();
+ 1038  
+ 1039    this.destroyMenu_();
+ ....
+ 1052  goog.ui.DatePicker.prototype.handleMenuKeyPress_ = function(event) {
+ 1053    // Prevent the grid keypress handler from catching the keypress event.
+ 1054:   event.stopPropagation();
+ 1055  
+ 1056    var el;
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/dialog.js:
+ 1045  
+ 1046    if (close || hasHandler) {
+ 1047:     e.stopPropagation();
+ 1048      e.preventDefault();
+ 1049    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/keyboardshortcuthandler.js:
+  100  
+  101    /**
+  102:    * Whether to always stop propagation if a shortcut event is fired.
+  103     * @type {boolean}
+  104     * @private
+  105     */
+  106:   this.alwaysStopPropagation_ = false;
+  107  
+  108    /**
+  ...
+  295  
+  296  /**
+  297:  * Sets whether to always stop propagation for the event when fired. If false,
+  298:  * the propagation is stopped only if stopPropagation is called on either of the
+  299   * corresponding SHORT_CUT_TRIGGERED or SHORTCUT_PREFIX events. If true, the
+  300   * event is prevented from propagating beyond its target whenever it is fired.
+  301   * The default value is false.
+  302:  * @param {boolean} alwaysStopPropagation Whether to always call
+  303:  *     stopPropagation.
+  304   */
+  305: goog.ui.KeyboardShortcutHandler.prototype.setAlwaysStopPropagation = function(
+  306:     alwaysStopPropagation) {
+  307:   this.alwaysStopPropagation_ = alwaysStopPropagation;
+  308  };
+  309  
+  ...
+  312   * Returns whether the event will always be stopped from propagating beyond its
+  313   * target when a shortcut event is fired. The default value is false.
+  314:  * @see #setAlwaysStopPropagation
+  315:  * @return {boolean} Whether stopPropagation will always be called.
+  316   */
+  317: goog.ui.KeyboardShortcutHandler.prototype.getAlwaysStopPropagation =
+  318      function() {
+  319:   return this.alwaysStopPropagation_;
+  320  };
+  321  
+  ...
+  912      }
+  913  
+  914:     if (this.alwaysStopPropagation_) {
+  915:       event.stopPropagation();
+  916      }
+  917  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/media/flashobject.js:
+  506    // inconsistently:
+  507    //
+  508:   // 1) FF2 + linux: the flash plugin will stop the propagation of all events
+  509    // from the plugin to the browser.
+  510    // 2) FF3 + mac: the flash plugin will propagate events on the <embed> object
+  ...
+  526        this.getElement(),
+  527        goog.object.getValues(goog.events.EventType),
+  528:       goog.events.Event.stopPropagation);
+  529  };
+  530  
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/menubutton.js:
+  877  
+  878    // Listen for document mousedown events in the capture phase, because
+  879:   // the target may stop propagation of the event in the bubble phase.
+  880    method.call(handler, this.getDomHelper().getDocument(),
+  881        goog.events.EventType.MOUSEDOWN, this.handleDocumentMouseDown, true);
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/offlineinstalldialog.js:
+  620   * Should enable button action be performed immediately when the user presses
+  621   * the enter key anywhere on the dialog. This should be set to false if there
+  622:  * are other action handlers on the dialog that may stop propagation.
+  623   * @type {boolean}
+  624   * @protected
+  ...
+  772   * Should install button action be performed immediately when the user presses
+  773   * the enter key anywhere on the dialog. This should be set to false if there
+  774:  * are other action handlers on the dialog that may stop propagation.
+  775   * @type {boolean}
+  776   * @protected
+  ...
+  948   * Should upgrade button action be performed immediately when the user presses
+  949   * the enter key anywhere on the dialog. This should be set to false if there
+  950:  * are other action handlers on the dialog that may stop propagation.
+  951   * @type {boolean}
+  952   * @protected
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/plaintextspellchecker.js:
+  258   */
+  259  goog.ui.PlainTextSpellChecker.prototype.onDictionaryCharged_ = function(e) {
+  260:   e.stopPropagation();
+  261    this.eventHandler_.unlisten(this.handler_,
+  262        goog.spell.SpellCheck.EventType.READY, this.onDictionaryCharged_, true);
+  ...
+  469  
+  470      // Prevent document click handler from closing the menu.
+  471:     event.stopPropagation();
+  472    }
+  473  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupbase.js:
+  758        // Eat the escape key, but only if this popup was actually closed.
+  759        e.preventDefault();
+  760:       e.stopPropagation();
+  761      }
+  762    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupcolorpicker.js:
+  433    // TODO(user): Update the colorpicker to allow selection to be cleared
+  434    if (this.colorPicker_.getSelectedIndex() == -1) {
+  435:     e.stopPropagation();
+  436      return;
+  437    }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/popupmenu.js:
+  513                      /** @type {number} */ (e.clientY));
+  514        e.preventDefault();
+  515:       e.stopPropagation();
+  516        return;
+  517      }
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/richtextspellchecker.js:
+  225   */
+  226  goog.ui.RichTextSpellChecker.prototype.onDictionaryCharged_ = function(e) {
+  227:   e.stopPropagation();
+  228    goog.events.unlisten(this.handler_, goog.spell.SpellCheck.EventType.READY,
+  229                         this.onDictionaryCharged_, true, this);
+  ...
+  617  
+  618      // Prevent document click handler from closing the menu.
+  619:     event.stopPropagation();
+  620    }
+  621  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/select.js:
+  121   * Handles {@link goog.ui.Component.EventType.ACTION} events dispatched by
+  122   * the menu item clicked by the user.  Updates the selection model, calls
+  123:  * the superclass implementation to hide the menu, stops the propagation of
+  124   * the event, and dispatches an ACTION event on behalf of the select control
+  125   * itself.  Overrides {@link goog.ui.MenuButton#handleMenuAction}.
+  ...
+  131    goog.base(this, 'handleMenuAction', e);
+  132  
+  133:   // NOTE(user): We should not stop propagation and then fire
+  134    // our own ACTION event. Fixing this without breaking anyone
+  135    // relying on this event is hard though.
+  136:   e.stopPropagation();
+  137    this.dispatchEvent(goog.ui.Component.EventType.ACTION);
+  138  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/closure/goog/ui/zippy.js:
+  396      event.preventDefault();
+  397  
+  398:     event.stopPropagation();
+  399    }
+  400  };
+
+/Users/hossein/Desktop/XTK-modified/X/lib/google-closure-library/third_party/closure/goog/mochikit/async/deferredlist.js:
+   52   *     input reports an error. The error result is passed to the
+   53   *     <code>DeferredList</code>'s error callback chain.
+   54:  * @param {boolean=} opt_consumeErrors When true, will stop propagation of the
+   55   *     error callback chain for input deferred objects. If the failing deferred
+   56   *     has a registered callback after this <code>DeferredList</code>, it will
+   ..
+  101  
+  102    /**
+  103:    * Whether to stop error propagation on the input Deferred objects. If the
+  104     * DeferredList sees an error from one of the Deferred inputs, the error will
+  105     * be captured, and the Deferred will be returned to success state with a null
+
+/Users/hossein/Desktop/XTK-modified/X/lib/pypng-0.0.9/html/_static/jquery.js:
+   24  while(i)ret[--i]=array[i];}return ret;},inArray:function(elem,array){for(var i=0,length=array.length;i<length;i++)if(array[i]===elem)return i;return-1;},merge:function(first,second){var i=0,elem,pos=first.length;if(jQuery.browser.msie){while(elem=second[i++])if(elem.nodeType!=8)first[pos++]=elem;}else
+   25  while(elem=second[i++])first[pos++]=elem;return first;},unique:function(array){var ret=[],done={};try{for(var i=0,length=array.length;i<length;i++){var id=jQuery.data(array[i]);if(!done[id]){done[id]=true;ret.push(array[i]);}}}catch(e){ret=array;}return ret;},grep:function(elems,callback,inv){var ret=[];for(var i=0,length=elems.length;i<length;i++)if(!inv!=!callback(elems[i],i))ret.push(elems[i]);return ret;},map:function(elems,callback){var ret=[];for(var i=0,length=elems.length;i<length;i++){var value=callback(elems[i],i);if(value!=null)ret[ret.length]=value;}return ret.concat.apply([],ret);}});var userAgent=navigator.userAgent.toLowerCase();jQuery.browser={version:(userAgent.match(/.+(?:rv|it|ra|ie)[\/: ]([\d.]+)/)||[])[1],safari:/webkit/.test(userAgent),opera:/opera/.test(userAgent),msie:/msie/.test(userAgent)&&!/opera/.test(userAgent),mozilla:/mozilla/.test(userAgent)&&!/(compatible|webkit)/.test(userAgent)};var styleFloat=jQuery.browser.msie?"styleFloat":"cssFloat";jQuery.extend({boxModel:!jQuery.browser.msie||document.compatMode=="CSS1Compat",props:{"for":"htmlFor","class":"className","float":styleFloat,cssFloat:styleFloat,styleFloat:styleFloat,readonly:"readOnly",maxlength:"maxLength",cellspacing:"cellSpacing"}});jQuery.each({parent:function(elem){return elem.parentNode;},parents:function(elem){return jQuery.dir(elem,"parentNode");},next:function(elem){return jQuery.nth(elem,2,"nextSibling");},prev:function(elem){return jQuery.nth(elem,2,"previousSibling");},nextAll:function(elem){return jQuery.dir(elem,"nextSibling");},prevAll:function(elem){return jQuery.dir(elem,"previousSibling");},siblings:function(elem){return jQuery.sibling(elem.parentNode.firstChild,elem);},children:function(elem){return jQuery.sibling(elem.firstChild);},contents:function(elem){return jQuery.nodeName(elem,"iframe")?elem.contentDocument||elem.contentWindow.document:jQuery.makeArray(elem.childNodes);}},function(name,fn){jQuery.fn[name]=function(selector){var ret=jQuery.map(this,fn);if(selector&&typeof selector=="string")ret=jQuery.multiFilter(selector,ret);return this.pushStack(jQuery.unique(ret));};});jQuery.each({appendTo:"append",prependTo:"prepend",insertBefore:"before",insertAfter:"after",replaceAll:"replaceWith"},function(name,original){jQuery.fn[name]=function(){var args=arguments;return this.each(function(){for(var i=0,length=args.length;i<length;i++)jQuery(args[i])[original](this);});};});jQuery.each({removeAttr:function(name){jQuery.attr(this,name,"");if(this.nodeType==1)this.removeAttribute(name);},addClass:function(classNames){jQuery.className.add(this,classNames);},removeClass:function(classNames){jQuery.className.remove(this,classNames);},toggleClass:function(classNames){jQuery.className[jQuery.className.has(this,classNames)?"remove":"add"](this,classNames);},remove:function(selector){if(!selector||jQuery.filter(selector,[this]).r.length){jQuery("*",this).add(this).each(function(){jQuery.event.remove(this);jQuery.removeData(this);});if(this.parentNode)this.parentNode.removeChild(this);}},empty:function(){jQuery(">*",this).remove();while(this.firstChild)this.removeChild(this.firstChild);}},function(name,fn){jQuery.fn[name]=function(){return this.each(fn,arguments);};});jQuery.each(["Height","Width"],function(i,name){var type=name.toLowerCase();jQuery.fn[type]=function(size){return this[0]==window?jQuery.browser.opera&&document.body["client"+name]||jQuery.browser.safari&&window["inner"+name]||document.compatMode=="CSS1Compat"&&document.documentElement["client"+name]||document.body["client"+name]:this[0]==document?Math.max(Math.max(document.body["scroll"+name],document.documentElement["scroll"+name]),Math.max(document.body["offset"+name],document.documentElement["offset"+name])):size==undefined?(this.length?jQuery.css(this[0],type):null):this.css(type,size.constructor==String?size:size+"px");};});function num(elem,prop){return elem[0]&&parseInt(jQuery.curCSS(elem[0],prop,true),10)||0;}var chars=jQuery.browser.safari&&parseInt(jQuery.browser.version)<417?"(?:[\\w*_-]|\\\\.)":"(?:[\\w\u0128-\uFFFF*_-]|\\\\.)",quickChild=new RegExp("^>\\s*("+chars+"+)"),quickID=new RegExp("^("+chars+"+)(#)("+chars+"+)"),quickClass=new RegExp("^([#.]?)("+chars+"*)");jQuery.extend({expr:{"":function(a,i,m){return m[2]=="*"||jQuery.nodeName(a,m[2]);},"#":function(a,i,m){return a.getAttribute("id")==m[2];},":":{lt:function(a,i,m){return i<m[3]-0;},gt:function(a,i,m){return i>m[3]-0;},nth:function(a,i,m){return m[3]-0==i;},eq:function(a,i,m){return m[3]-0==i;},first:function(a,i){return i==0;},last:function(a,i,m,r){return i==r.length-1;},even:function(a,i){return i%2==0;},odd:function(a,i){return i%2;},"first-child":function(a){return a.parentNode.getElementsByTagName("*")[0]==a;},"last-child":function(a){return jQuery.nth(a.parentNode.lastChild,1,"previousSibling")==a;},"only-child":function(a){return!jQuery.nth(a.parentNode.lastChild,2,"previousSibling");},parent:function(a){return a.firstChild;},empty:function(a){return!a.firstChild;},contains:function(a,i,m){return(a.textContent||a.innerText||jQuery(a).text()||"").indexOf(m[3])>=0;},visible:function(a){return"hidden"!=a.type&&jQuery.css(a,"display")!="none"&&jQuery.css(a,"visibility")!="hidden";},hidden:function(a){return"hidden"==a.type||jQuery.css(a,"display")=="none"||jQuery.css(a,"visibility")=="hidden";},enabled:function(a){return!a.disabled;},disabled:function(a){return a.disabled;},checked:function(a){return a.checked;},selected:function(a){return a.selected||jQuery.attr(a,"selected");},text:function(a){return"text"==a.type;},radio:function(a){return"radio"==a.type;},checkbox:function(a){return"checkbox"==a.type;},file:function(a){return"file"==a.type;},password:function(a){return"password"==a.type;},submit:function(a){return"submit"==a.type;},image:function(a){return"image"==a.type;},reset:function(a){return"reset"==a.type;},button:function(a){return"button"==a.type||jQuery.nodeName(a,"button");},input:function(a){return/input|select|textarea|button/i.test(a.nodeName);},has:function(a,i,m){return jQuery.find(m[3],a).length;},header:function(a){return/h\d/i.test(a.nodeName);},animated:function(a){return jQuery.grep(jQuery.timers,function(fn){return a==fn.elem;}).length;}}},parse:[/^(\[) *@?([\w-]+) *([!*$^~=]*) *('?"?)(.*?)\4 *\]/,/^(:)([\w-]+)\("?'?(.*?(\(.*?\))?[^(]*?)"?'?\)/,new RegExp("^([:.#]*)("+chars+"+)")],multiFilter:function(expr,elems,not){var old,cur=[];while(expr&&expr!=old){old=expr;var f=jQuery.filter(expr,elems,not);expr=f.t.replace(/^\s*,\s*/,"");cur=not?elems=f.r:jQuery.merge(cur,f.r);}return cur;},find:function(t,context){if(typeof t!="string")return[t];if(context&&context.nodeType!=1&&context.nodeType!=9)return[];context=context||document;var ret=[context],done=[],last,nodeName;while(t&&last!=t){var r=[];last=t;t=jQuery.trim(t);var foundToken=false,re=quickChild,m=re.exec(t);if(m){nodeName=m[1].toUpperCase();for(var i=0;ret[i];i++)for(var c=ret[i].firstChild;c;c=c.nextSibling)if(c.nodeType==1&&(nodeName=="*"||c.nodeName.toUpperCase()==nodeName))r.push(c);ret=r;t=t.replace(re,"");if(t.indexOf(" ")==0)continue;foundToken=true;}else{re=/^([>+~])\s*(\w*)/i;if((m=re.exec(t))!=null){r=[];var merge={};nodeName=m[2].toUpperCase();m=m[1];for(var j=0,rl=ret.length;j<rl;j++){var n=m=="~"||m=="+"?ret[j].nextSibling:ret[j].firstChild;for(;n;n=n.nextSibling)if(n.nodeType==1){var id=jQuery.data(n);if(m=="~"&&merge[id])break;if(!nodeName||n.nodeName.toUpperCase()==nodeName){if(m=="~")merge[id]=true;r.push(n);}if(m=="+")break;}}ret=r;t=jQuery.trim(t.replace(re,""));foundToken=true;}}if(t&&!foundToken){if(!t.indexOf(",")){if(context==ret[0])ret.shift();done=jQuery.merge(done,ret);r=ret=[context];t=" "+t.substr(1,t.length);}else{var re2=quickID;var m=re2.exec(t);if(m){m=[0,m[2],m[3],m[1]];}else{re2=quickClass;m=re2.exec(t);}m[2]=m[2].replace(/\\/g,"");var elem=ret[ret.length-1];if(m[1]=="#"&&elem&&elem.getElementById&&!jQuery.isXMLDoc(elem)){var oid=elem.getElementById(m[2]);if((jQuery.browser.msie||jQuery.browser.opera)&&oid&&typeof oid.id=="string"&&oid.id!=m[2])oid=jQuery('[@id="'+m[2]+'"]',elem)[0];ret=r=oid&&(!m[3]||jQuery.nodeName(oid,m[3]))?[oid]:[];}else{for(var i=0;ret[i];i++){var tag=m[1]=="#"&&m[3]?m[3]:m[1]!=""||m[0]==""?"*":m[2];if(tag=="*"&&ret[i].nodeName.toLowerCase()=="object")tag="param";r=jQuery.merge(r,ret[i].getElementsByTagName(tag));}if(m[1]==".")r=jQuery.classFilter(r,m[2]);if(m[1]=="#"){var tmp=[];for(var i=0;r[i];i++)if(r[i].getAttribute("id")==m[2]){tmp=[r[i]];break;}r=tmp;}ret=r;}t=t.replace(re2,"");}}if(t){var val=jQuery.filter(t,r);ret=r=val.r;t=jQuery.trim(val.t);}}if(t)ret=[];if(ret&&context==ret[0])ret.shift();done=jQuery.merge(done,ret);return done;},classFilter:function(r,m,not){m=" "+m+" ";var tmp=[];for(var i=0;r[i];i++){var pass=(" "+r[i].className+" ").indexOf(m)>=0;if(!not&&pass||not&&!pass)tmp.push(r[i]);}return tmp;},filter:function(t,r,not){var last;while(t&&t!=last){last=t;var p=jQuery.parse,m;for(var i=0;p[i];i++){m=p[i].exec(t);if(m){t=t.substring(m[0].length);m[2]=m[2].replace(/\\/g,"");break;}}if(!m)break;if(m[1]==":"&&m[2]=="not")r=isSimple.test(m[3])?jQuery.filter(m[3],r,true).r:jQuery(r).not(m[3]);else if(m[1]==".")r=jQuery.classFilter(r,m[2],not);else if(m[1]=="["){var tmp=[],type=m[3];for(var i=0,rl=r.length;i<rl;i++){var a=r[i],z=a[jQuery.props[m[2]]||m[2]];if(z==null||/href|src|selected/.test(m[2]))z=jQuery.attr(a,m[2])||'';if((type==""&&!!z||type=="="&&z==m[5]||type=="!="&&z!=m[5]||type=="^="&&z&&!z.indexOf(m[5])||type=="$="&&z.substr(z.length-m[5].length)==m[5]||(type=="*="||type=="~=")&&z.indexOf(m[5])>=0)^not)tmp.push(a);}r=tmp;}else if(m[1]==":"&&m[2]=="nth-child"){var merge={},tmp=[],test=/(-?)(\d*)n((?:\+|-)?\d*)/.exec(m[3]=="even"&&"2n"||m[3]=="odd"&&"2n+1"||!/\D/.test(m[3])&&"0n+"+m[3]||m[3]),first=(test[1]+(test[2]||1))-0,last=test[3]-0;for(var i=0,rl=r.length;i<rl;i++){var node=r[i],parentNode=node.parentNode,id=jQuery.data(parentNode);if(!merge[id]){var c=1;for(var n=parentNode.firstChild;n;n=n.nextSibling)if(n.nodeType==1)n.nodeIndex=c++;merge[id]=true;}var add=false;if(first==0){if(node.nodeIndex==last)add=true;}else if((node.nodeIndex-last)%first==0&&(node.nodeIndex-last)/first>=0)add=true;if(add^not)tmp.push(node);}r=tmp;}else{var fn=jQuery.expr[m[1]];if(typeof fn=="object")fn=fn[m[2]];if(typeof fn=="string")fn=eval("false||function(a,i){return "+fn+";}");r=jQuery.grep(r,function(elem,i){return fn(elem,i,m,r);},not);}}return{r:r,t:t};},dir:function(elem,dir){var matched=[],cur=elem[dir];while(cur&&cur!=document){if(cur.nodeType==1)matched.push(cur);cur=cur[dir];}return matched;},nth:function(cur,result,dir,elem){result=result||1;var num=0;for(;cur;cur=cur[dir])if(cur.nodeType==1&&++num==result)break;return cur;},sibling:function(n,elem){var r=[];for(;n;n=n.nextSibling){if(n.nodeType==1&&n!=elem)r.push(n);}return r;}});jQuery.event={add:function(elem,types,handler,data){if(elem.nodeType==3||elem.nodeType==8)return;if(jQuery.browser.msie&&elem.setInterval)elem=window;if(!handler.guid)handler.guid=this.guid++;if(data!=undefined){var fn=handler;handler=this.proxy(fn,function(){return fn.apply(this,arguments);});handler.data=data;}var events=jQuery.data(elem,"events")||jQuery.data(elem,"events",{}),handle=jQuery.data(elem,"handle")||jQuery.data(elem,"handle",function(){if(typeof jQuery!="undefined"&&!jQuery.event.triggered)return jQuery.event.handle.apply(arguments.callee.elem,arguments);});handle.elem=elem;jQuery.each(types.split(/\s+/),function(index,type){var parts=type.split(".");type=parts[0];handler.type=parts[1];var handlers=events[type];if(!handlers){handlers=events[type]={};if(!jQuery.event.special[type]||jQuery.event.special[type].setup.call(elem)===false){if(elem.addEventListener)elem.addEventListener(type,handle,false);else if(elem.attachEvent)elem.attachEvent("on"+type,handle);}}handlers[handler.guid]=handler;jQuery.event.global[type]=true;});elem=null;},guid:1,global:{},remove:function(elem,types,handler){if(elem.nodeType==3||elem.nodeType==8)return;var events=jQuery.data(elem,"events"),ret,index;if(events){if(types==undefined||(typeof types=="string"&&types.charAt(0)=="."))for(var type in events)this.remove(elem,type+(types||""));else{if(types.type){handler=types.handler;types=types.type;}jQuery.each(types.split(/\s+/),function(index,type){var parts=type.split(".");type=parts[0];if(events[type]){if(handler)delete events[type][handler.guid];else
+   26: for(handler in events[type])if(!parts[1]||events[type][handler].type==parts[1])delete events[type][handler];for(ret in events[type])break;if(!ret){if(!jQuery.event.special[type]||jQuery.event.special[type].teardown.call(elem)===false){if(elem.removeEventListener)elem.removeEventListener(type,jQuery.data(elem,"handle"),false);else if(elem.detachEvent)elem.detachEvent("on"+type,jQuery.data(elem,"handle"));}ret=null;delete events[type];}}});}for(ret in events)break;if(!ret){var handle=jQuery.data(elem,"handle");if(handle)handle.elem=null;jQuery.removeData(elem,"events");jQuery.removeData(elem,"handle");}}},trigger:function(type,data,elem,donative,extra){data=jQuery.makeArray(data);if(type.indexOf("!")>=0){type=type.slice(0,-1);var exclusive=true;}if(!elem){if(this.global[type])jQuery("*").add([window,document]).trigger(type,data);}else{if(elem.nodeType==3||elem.nodeType==8)return undefined;var val,ret,fn=jQuery.isFunction(elem[type]||null),event=!data[0]||!data[0].preventDefault;if(event){data.unshift({type:type,target:elem,preventDefault:function(){},stopPropagation:function(){},timeStamp:now()});data[0][expando]=true;}data[0].type=type;if(exclusive)data[0].exclusive=true;var handle=jQuery.data(elem,"handle");if(handle)val=handle.apply(elem,data);if((!fn||(jQuery.nodeName(elem,'a')&&type=="click"))&&elem["on"+type]&&elem["on"+type].apply(elem,data)===false)val=false;if(event)data.shift();if(extra&&jQuery.isFunction(extra)){ret=extra.apply(elem,val==null?data:data.concat(val));if(ret!==undefined)val=ret;}if(fn&&donative!==false&&val!==false&&!(jQuery.nodeName(elem,'a')&&type=="click")){this.triggered=true;try{elem[type]();}catch(e){}}this.triggered=false;}return val;},handle:function(event){var val,ret,namespace,all,handlers;event=arguments[0]=jQuery.event.fix(event||window.event);namespace=event.type.split(".");event.type=namespace[0];namespace=namespace[1];all=!namespace&&!event.exclusive;handlers=(jQuery.data(this,"events")||{})[event.type];for(var j in handlers){var handler=handlers[j];if(all||handler.type==namespace){event.handler=handler;event.data=handler.data;ret=handler.apply(this,arguments);if(val!==false)val=ret;if(ret===false){event.preventDefault();event.stopPropagation();}}}return val;},fix:function(event){if(event[expando]==true)return event;var originalEvent=event;event={originalEvent:originalEvent};var props="altKey attrChange attrName bubbles button cancelable charCode clientX clientY ctrlKey currentTarget data detail eventPhase fromElement handler keyCode metaKey newValue originalTarget pageX pageY prevValue relatedNode relatedTarget screenX screenY shiftKey srcElement target timeStamp toElement type view wheelDelta which".split(" ");for(var i=props.length;i;i--)event[props[i]]=originalEvent[props[i]];event[expando]=true;event.preventDefault=function(){if(originalEvent.preventDefault)originalEvent.preventDefault();originalEvent.returnValue=false;};event.stopPropagation=function(){if(originalEvent.stopPropagation)originalEvent.stopPropagation();originalEvent.cancelBubble=true;};event.timeStamp=event.timeStamp||now();if(!event.target)event.target=event.srcElement||document;if(event.target.nodeType==3)event.target=event.target.parentNode;if(!event.relatedTarget&&event.fromElement)event.relatedTarget=event.fromElement==event.target?event.toElement:event.fromElement;if(event.pageX==null&&event.clientX!=null){var doc=document.documentElement,body=document.body;event.pageX=event.clientX+(doc&&doc.scrollLeft||body&&body.scrollLeft||0)-(doc.clientLeft||0);event.pageY=event.clientY+(doc&&doc.scrollTop||body&&body.scrollTop||0)-(doc.clientTop||0);}if(!event.which&&((event.charCode||event.charCode===0)?event.charCode:event.keyCode))event.which=event.charCode||event.keyCode;if(!event.metaKey&&event.ctrlKey)event.metaKey=event.ctrlKey;if(!event.which&&event.button)event.which=(event.button&1?1:(event.button&2?3:(event.button&4?2:0)));return event;},proxy:function(fn,proxy){proxy.guid=fn.guid=fn.guid||proxy.guid||this.guid++;return proxy;},special:{ready:{setup:function(){bindReady();return;},teardown:function(){return;}},mouseenter:{setup:function(){if(jQuery.browser.msie)return false;jQuery(this).bind("mouseover",jQuery.event.special.mouseenter.handler);return true;},teardown:function(){if(jQuery.browser.msie)return false;jQuery(this).unbind("mouseover",jQuery.event.special.mouseenter.handler);return true;},handler:function(event){if(withinElement(event,this))return true;event.type="mouseenter";return jQuery.event.handle.apply(this,arguments);}},mouseleave:{setup:function(){if(jQuery.browser.msie)return false;jQuery(this).bind("mouseout",jQuery.event.special.mouseleave.handler);return true;},teardown:function(){if(jQuery.browser.msie)return false;jQuery(this).unbind("mouseout",jQuery.event.special.mouseleave.handler);return true;},handler:function(event){if(withinElement(event,this))return true;event.type="mouseleave";return jQuery.event.handle.apply(this,arguments);}}}};jQuery.fn.extend({bind:function(type,data,fn){return type=="unload"?this.one(type,data,fn):this.each(function(){jQuery.event.add(this,type,fn||data,fn&&data);});},one:function(type,data,fn){var one=jQuery.event.proxy(fn||data,function(event){jQuery(this).unbind(event,one);return(fn||data).apply(this,arguments);});return this.each(function(){jQuery.event.add(this,type,one,fn&&data);});},unbind:function(type,fn){return this.each(function(){jQuery.event.remove(this,type,fn);});},trigger:function(type,data,fn){return this.each(function(){jQuery.event.trigger(type,data,this,true,fn);});},triggerHandler:function(type,data,fn){return this[0]&&jQuery.event.trigger(type,data,this[0],false,fn);},toggle:function(fn){var args=arguments,i=1;while(i<args.length)jQuery.event.proxy(fn,args[i++]);return this.click(jQuery.event.proxy(fn,function(event){this.lastToggle=(this.lastToggle||0)%i;event.preventDefault();return args[this.lastToggle++].apply(this,arguments)||false;}));},hover:function(fnOver,fnOut){return this.bind('mouseenter',fnOver).bind('mouseleave',fnOut);},ready:function(fn){bindReady();if(jQuery.isReady)fn.call(document,jQuery);else
+   27  jQuery.readyList.push(function(){return fn.call(this,jQuery);});return this;}});jQuery.extend({isReady:false,readyList:[],ready:function(){if(!jQuery.isReady){jQuery.isReady=true;if(jQuery.readyList){jQuery.each(jQuery.readyList,function(){this.call(document);});jQuery.readyList=null;}jQuery(document).triggerHandler("ready");}}});var readyBound=false;function bindReady(){if(readyBound)return;readyBound=true;if(document.addEventListener&&!jQuery.browser.opera)document.addEventListener("DOMContentLoaded",jQuery.ready,false);if(jQuery.browser.msie&&window==top)(function(){if(jQuery.isReady)return;try{document.documentElement.doScroll("left");}catch(error){setTimeout(arguments.callee,0);return;}jQuery.ready();})();if(jQuery.browser.opera)document.addEventListener("DOMContentLoaded",function(){if(jQuery.isReady)return;for(var i=0;i<document.styleSheets.length;i++)if(document.styleSheets[i].disabled){setTimeout(arguments.callee,0);return;}jQuery.ready();},false);if(jQuery.browser.safari){var numStyles;(function(){if(jQuery.isReady)return;if(document.readyState!="loaded"&&document.readyState!="complete"){setTimeout(arguments.callee,0);return;}if(numStyles===undefined)numStyles=jQuery("style, link[rel=stylesheet]").length;if(document.styleSheets.length!=numStyles){setTimeout(arguments.callee,0);return;}jQuery.ready();})();}jQuery.event.add(window,"load",jQuery.ready);}jQuery.each(("blur,focus,load,resize,scroll,unload,click,dblclick,"+"mousedown,mouseup,mousemove,mouseover,mouseout,change,select,"+"submit,keydown,keypress,keyup,error").split(","),function(i,name){jQuery.fn[name]=function(fn){return fn?this.bind(name,fn):this.trigger(name);};});var withinElement=function(event,elem){var parent=event.relatedTarget;while(parent&&parent!=elem)try{parent=parent.parentNode;}catch(error){parent=elem;}return parent==elem;};jQuery(window).bind("unload",function(){jQuery("*").add(document).unbind();});jQuery.fn.extend({_load:jQuery.fn.load,load:function(url,params,callback){if(typeof url!='string')return this._load(url);var off=url.indexOf(" ");if(off>=0){var selector=url.slice(off,url.length);url=url.slice(0,off);}callback=callback||function(){};var type="GET";if(params)if(jQuery.isFunction(params)){callback=params;params=null;}else{params=jQuery.param(params);type="POST";}var self=this;jQuery.ajax({url:url,type:type,dataType:"html",data:params,complete:function(res,status){if(status=="success"||status=="notmodified")self.html(selector?jQuery("<div/>").append(res.responseText.replace(/<script(.|\s)*?\/script>/g,"")).find(selector):res.responseText);self.each(callback,[res.responseText,status,res]);}});return this;},serialize:function(){return jQuery.param(this.serializeArray());},serializeArray:function(){return this.map(function(){return jQuery.nodeName(this,"form")?jQuery.makeArray(this.elements):this;}).filter(function(){return this.name&&!this.disabled&&(this.checked||/select|textarea/i.test(this.nodeName)||/text|hidden|password/i.test(this.type));}).map(function(i,elem){var val=jQuery(this).val();return val==null?null:val.constructor==Array?jQuery.map(val,function(val,i){return{name:elem.name,value:val};}):{name:elem.name,value:val};}).get();}});jQuery.each("ajaxStart,ajaxStop,ajaxComplete,ajaxError,ajaxSuccess,ajaxSend".split(","),function(i,o){jQuery.fn[o]=function(f){return this.bind(o,f);};});var jsc=now();jQuery.extend({get:function(url,data,callback,type){if(jQuery.isFunction(data)){callback=data;data=null;}return jQuery.ajax({type:"GET",url:url,data:data,success:callback,dataType:type});},getScript:function(url,callback){return jQuery.get(url,null,callback,"script");},getJSON:function(url,data,callback){return jQuery.get(url,data,callback,"json");},post:function(url,data,callback,type){if(jQuery.isFunction(data)){callback=data;data={};}return jQuery.ajax({type:"POST",url:url,data:data,success:callback,dataType:type});},ajaxSetup:function(settings){jQuery.extend(jQuery.ajaxSettings,settings);},ajaxSettings:{url:location.href,global:true,type:"GET",timeout:0,contentType:"application/x-www-form-urlencoded",processData:true,async:true,data:null,username:null,password:null,accepts:{xml:"application/xml, text/xml",html:"text/html",script:"text/javascript, application/javascript",json:"application/json, text/javascript",text:"text/plain",_default:"*/*"}},lastModified:{},ajax:function(s){s=jQuery.extend(true,s,jQuery.extend(true,{},jQuery.ajaxSettings,s));var jsonp,jsre=/=\?(&|$)/g,status,data,type=s.type.toUpperCase();if(s.data&&s.processData&&typeof s.data!="string")s.data=jQuery.param(s.data);if(s.dataType=="jsonp"){if(type=="GET"){if(!s.url.match(jsre))s.url+=(s.url.match(/\?/)?"&":"?")+(s.jsonp||"callback")+"=?";}else if(!s.data||!s.data.match(jsre))s.data=(s.data?s.data+"&":"")+(s.jsonp||"callback")+"=?";s.dataType="json";}if(s.dataType=="json"&&(s.data&&s.data.match(jsre)||s.url.match(jsre))){jsonp="jsonp"+jsc++;if(s.data)s.data=(s.data+"").replace(jsre,"="+jsonp+"$1");s.url=s.url.replace(jsre,"="+jsonp+"$1");s.dataType="script";window[jsonp]=function(tmp){data=tmp;success();complete();window[jsonp]=undefined;try{delete window[jsonp];}catch(e){}if(head)head.removeChild(script);};}if(s.dataType=="script"&&s.cache==null)s.cache=false;if(s.cache===false&&type=="GET"){var ts=now();var ret=s.url.replace(/(\?|&)_=.*?(&|$)/,"$1_="+ts+"$2");s.url=ret+((ret==s.url)?(s.url.match(/\?/)?"&":"?")+"_="+ts:"");}if(s.data&&type=="GET"){s.url+=(s.url.match(/\?/)?"&":"?")+s.data;s.data=null;}if(s.global&&!jQuery.active++)jQuery.event.trigger("ajaxStart");var remote=/^(?:\w+:)?\/\/([^\/?#]+)/;if(s.dataType=="script"&&type=="GET"&&remote.test(s.url)&&remote.exec(s.url)[1]!=location.host){var head=document.getElementsByTagName("head")[0];var script=document.createElement("script");script.src=s.url;if(s.scriptCharset)script.charset=s.scriptCharset;if(!jsonp){var done=false;script.onload=script.onreadystatechange=function(){if(!done&&(!this.readyState||this.readyState=="loaded"||this.readyState=="complete")){done=true;success();complete();head.removeChild(script);}};}head.appendChild(script);return undefined;}var requestDone=false;var xhr=window.ActiveXObject?new ActiveXObject("Microsoft.XMLHTTP"):new XMLHttpRequest();if(s.username)xhr.open(type,s.url,s.async,s.username,s.password);else
+   28  xhr.open(type,s.url,s.async);try{if(s.data)xhr.setRequestHeader("Content-Type",s.contentType);if(s.ifModified)xhr.setRequestHeader("If-Modified-Since",jQuery.lastModified[s.url]||"Thu, 01 Jan 1970 00:00:00 GMT");xhr.setRequestHeader("X-Requested-With","XMLHttpRequest");xhr.setRequestHeader("Accept",s.dataType&&s.accepts[s.dataType]?s.accepts[s.dataType]+", */*":s.accepts._default);}catch(e){}if(s.beforeSend&&s.beforeSend(xhr,s)===false){s.global&&jQuery.active--;xhr.abort();return false;}if(s.global)jQuery.event.trigger("ajaxSend",[xhr,s]);var onreadystatechange=function(isTimeout){if(!requestDone&&xhr&&(xhr.readyState==4||isTimeout=="timeout")){requestDone=true;if(ival){clearInterval(ival);ival=null;}status=isTimeout=="timeout"&&"timeout"||!jQuery.httpSuccess(xhr)&&"error"||s.ifModified&&jQuery.httpNotModified(xhr,s.url)&&"notmodified"||"success";if(status=="success"){try{data=jQuery.httpData(xhr,s.dataType,s.dataFilter);}catch(e){status="parsererror";}}if(status=="success"){var modRes;try{modRes=xhr.getResponseHeader("Last-Modified");}catch(e){}if(s.ifModified&&modRes)jQuery.lastModified[s.url]=modRes;if(!jsonp)success();}else
+
+/Users/hossein/Desktop/XTK-modified/X/objects/volume.js:
+  718        this._volumeRendering = volumeRendering;
+  719  
+  720:       // fire a modified event without propagation for fast switching
+  721        this.modified(false);
+  722  
+  ...
+  742  
+  743      // here we have to only set specific children to visible using
+  744:     // the modified function without down propagation..
+  745      this._visible = visible;
+  746  
+  ...
+  905      this._indexX = indexX;
+  906  
+  907:     // fire a modified event without propagation for fast slicing
+  908      this.modified(false);
+  909  
+  ...
+  940      this._indexY = indexY;
+  941  
+  942:     // fire a modified event without propagation for fast slicing
+  943      this.modified(false);
+  944  
+  ...
+  975      this._indexZ = indexZ;
+  976  
+  977:     // fire a modified event without propagation for fast slicing
+  978      this.modified(false);
+  979  
+
+/Users/hossein/Desktop/XTK-modified/X/utils/xtk.js:
+   54  function Ab(a){var b;if(!(b=zb[a])){b=0;for(var c=String(tb).replace(/^[\s\xa0]+|[\s\xa0]+$/g,"").split("."),e=String(a).replace(/^[\s\xa0]+|[\s\xa0]+$/g,"").split("."),d=Math.max(c.length,e.length),f=0;0==b&&f<d;f++){var g=c[f]||"",h=e[f]||"",l=RegExp("(\\d*)(\\D*)","g"),j=RegExp("(\\d*)(\\D*)","g");do{var k=l.exec(g)||["","",""],p=j.exec(h)||["","",""];if(0==k[0].length&&0==p[0].length)break;b=((0==k[1].length?0:parseInt(k[1],10))<(0==p[1].length?0:parseInt(p[1],10))?-1:(0==k[1].length?0:parseInt(k[1],
+   55  10))>(0==p[1].length?0:parseInt(p[1],10))?1:0)||((0==k[2].length)<(0==p[2].length)?-1:(0==k[2].length)>(0==p[2].length)?1:0)||(k[2]<p[2]?-1:k[2]>p[2]?1:0)}while(0==b)}b=zb[a]=0<=b}return b}var Bb=fa.document,Cb=!Bb||!K?n:sb()||("CSS1Compat"==Bb.compatMode?parseInt(tb,10):5);var Db=!K||K&&9<=Cb,Eb=K&&!Ab("9");!mb||Ab("528");jb&&Ab("1.9b")||K&&Ab("8")||ib&&Ab("9.5")||mb&&Ab("528");jb&&!Ab("8")||K&&Ab("9");var Fb=Array.prototype,Gb=Fb.indexOf?function(a,b,c){return Fb.indexOf.call(a,b,c)}:function(a,b,c){c=c==s?0:0>c?Math.max(0,a.length+c):c;if(na(a))return!na(b)||1!=b.length?-1:a.indexOf(b,c);for(;c<a.length;c++)if(c in a&&a[c]===b)return c;return-1},Ib=Fb.forEach?function(a,b,c){Fb.forEach.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=na(a)?a.split(""):a,f=0;f<e;f++)f in d&&b.call(c,d[f],f,a)},Jb=Fb.map?function(a,b,c){return Fb.map.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=Array(e),f=
+   56: na(a)?a.split(""):a,g=0;g<e;g++)g in f&&(d[g]=b.call(c,f[g],g,a));return d},Kb=Fb.some?function(a,b,c){return Fb.some.call(a,b,c)}:function(a,b,c){for(var e=a.length,d=na(a)?a.split(""):a,f=0;f<e;f++)if(f in d&&b.call(c,d[f],f,a))return q;return t};function Lb(a,b){var c=Gb(a,b);0<=c&&Fb.splice.call(a,c,1)}function Mb(a,b,c){return 2>=arguments.length?Fb.slice.call(a,b):Fb.slice.call(a,b,c)};function Nb(){0!=Ob&&(this.xl=Error().stack,qa(this))}var Ob=0;function Pb(a,b){this.type=a;this.currentTarget=this.target=b}v=Pb.prototype;v.wc=t;v.defaultPrevented=t;v.xe=q;v.stopPropagation=function(){this.wc=q};v.preventDefault=function(){this.defaultPrevented=q;this.xe=t};function Qb(a){Qb[" "](a);return a}Qb[" "]=ga;function Ub(a,b){a&&this.Ba(a,b)}C(Ub,Pb);v=Ub.prototype;v.target=s;v.relatedTarget=s;v.offsetX=0;v.offsetY=0;v.clientX=0;v.clientY=0;v.screenX=0;v.screenY=0;v.button=0;v.keyCode=0;v.charCode=0;v.ctrlKey=t;v.altKey=t;v.shiftKey=t;v.metaKey=t;v.Wj=t;v.sb=s;
+   57  v.Ba=function(a,b){var c=this.type=a.type;Pb.call(this,c);this.target=a.target||a.srcElement;this.currentTarget=b;var e=a.relatedTarget;if(e){if(jb){var d;a:{try{Qb(e.nodeName);d=q;break a}catch(f){}d=t}d||(e=s)}}else"mouseover"==c?e=a.fromElement:"mouseout"==c&&(e=a.toElement);this.relatedTarget=e;this.offsetX=mb||a.offsetX!==n?a.offsetX:a.layerX;this.offsetY=mb||a.offsetY!==n?a.offsetY:a.layerY;this.clientX=a.clientX!==n?a.clientX:a.pageX;this.clientY=a.clientY!==n?a.clientY:a.pageY;this.screenX=
+   58: a.screenX||0;this.screenY=a.screenY||0;this.button=a.button;this.keyCode=a.keyCode||0;this.charCode=a.charCode||("keypress"==c?a.keyCode:0);this.ctrlKey=a.ctrlKey;this.altKey=a.altKey;this.shiftKey=a.shiftKey;this.metaKey=a.metaKey;this.Wj=ab?a.metaKey:a.ctrlKey;this.state=a.state;this.sb=a;a.defaultPrevented&&this.preventDefault();delete this.wc};v.stopPropagation=function(){Ub.u.stopPropagation.call(this);this.sb.stopPropagation?this.sb.stopPropagation():this.sb.cancelBubble=q};
+   59  v.preventDefault=function(){Ub.u.preventDefault.call(this);var a=this.sb;if(a.preventDefault)a.preventDefault();else if(a.returnValue=t,Eb)try{if(a.ctrlKey||112<=a.keyCode&&123>=a.keyCode)a.keyCode=-1}catch(b){}};v.Gi=u("sb");var Vb={},Wb={},Xb={},Yb={};function L(a,b,c,e,d){if(ja(b)){for(var f=0;f<b.length;f++)L(a,b[f],c,e,d);return s}a=Zb(a,b,c,t,e,d);b=a.key;Vb[b]=a;return b}
+   60  function Zb(a,b,c,e,d,f){b||m(Error("Invalid event type"));d=!!d;var g=Wb;b in g||(g[b]={oa:0,Na:0});g=g[b];d in g||(g[d]={oa:0,Na:0},g.oa++);var g=g[d],h=qa(a),l;g.Na++;if(g[h]){l=g[h];for(var j=0;j<l.length;j++)if(g=l[j],g.bc==c&&g.tf==f){if(g.xc)break;e||(l[j].ie=t);return l[j]}}else l=g[h]=[],g.oa++;var k=$b,p=Db?function(a){return k.call(p.src,p.bc,a)}:function(a){a=k.call(p.src,p.bc,a);if(!a)return a},j=p,g=new La;g.Ba(c,j,a,b,d,f);g.ie=e;j.src=a;j.bc=g;l.push(g);Xb[h]||(Xb[h]=[]);Xb[h].push(g);
+   ..
+  353  function Ug(a,b){a.Ee&&a.Ee.stop();a.re&&a.re.stop();if(b){if(!a.Ma&&a.Df()){a.H||m(Error("Caller must call setElement before trying to show the popup"));a.tb();var c=ee(a.H);a.Pi&&Bg(a.Ib,c,"keydown",a.rj,q);if(a.gi)if(Bg(a.Ib,c,"mousedown",a.hh,q),K){var e;try{e=c.activeElement}catch(d){}for(;e&&"IFRAME"==e.nodeName;){try{var f=e.contentDocument||e.contentWindow.document}catch(g){break}c=f;e=c.activeElement}Bg(a.Ib,c,"mousedown",a.hh,q);Bg(a.Ib,c,"deactivate",a.gh)}else Bg(a.Ib,c,"blur",a.gh);"toggle_display"==
+  354  a.$c?(a.H.style.visibility="visible",Fe(a.H,q)):"move_offscreen"==a.$c&&a.tb();a.Ma=q;a.Ee?(ac(a.Ee,"end",a.kh,t,a),a.Ee.play()):a.kh()}}else Vg(a)}v.tb=ga;function Vg(a,b){if(!a.Ma||!a.dispatchEvent({type:"beforehide",target:b}))return t;a.Ib&&a.Ib.Of();a.Ma=t;a.Wg=xa();a.re?(ac(a.re,"end",wa(a.Eg,b),t,a),a.re.play()):a.Eg(b);return q}v.Eg=function(a){"toggle_display"==this.$c?this.ek?Mg(this.Og,0,this):this.Og():"move_offscreen"==this.$c&&(this.H.style.top="-10000px");this.Hf(a)};
+  355: v.Og=function(){this.H.style.visibility="hidden";Fe(this.H,t)};v.Df=function(){return this.dispatchEvent("beforeshow")};v.kh=function(){this.wf=xa();this.Wg=-1;this.dispatchEvent("show")};v.Hf=function(a){this.dispatchEvent({type:"hide",target:a})};v.hh=function(a){a=a.target;!me(this.H,a)&&((!this.zg||me(this.zg,a))&&!(150>xa()-this.wf))&&Vg(this,a)};v.rj=function(a){27==a.keyCode&&Vg(this,a.target)&&(a.preventDefault(),a.stopPropagation())};
+  356  v.gh=function(a){if(this.wi){var b=ee(this.H);if(K||ib){if(a=b.activeElement,!a||me(this.H,a)||"BODY"==a.tagName)return}else if(a.target!=b)return;150>xa()-this.wf||Vg(this)}};function Wg(a,b){this.Xj=4;this.we=b||n;Tg.call(this,a)}C(Wg,Tg);Wg.prototype.tb=function(){if(this.we){var a=!this.Ma&&"move_offscreen"!=this.$c,b=this.t();a&&(b.style.visibility="hidden",Fe(b,q));this.we.tb(b,this.Xj,this.Kl);a&&Fe(b,t)}};function Xg(a){this.ga=new Bc;a&&this.df(a)}function Yg(a){var b=typeof a;return"object"==b&&a||"function"==b?"o"+qa(a):b.substr(0,1)+a}v=Xg.prototype;v.sf=function(){return this.ga.sf()};v.add=function(a){this.ga.set(Yg(a),a)};v.df=function(a){a=Ac(a);for(var b=a.length,c=0;c<b;c++)this.add(a[c])};v.Of=function(a){a=Ac(a);for(var b=a.length,c=0;c<b;c++)this.remove(a[c])};v.remove=function(a){return this.ga.remove(Yg(a))};v.clear=function(){this.ga.clear()};
+  357  v.contains=function(a){a=Yg(a);return Ec(this.ga.ga,a)};v.Tg=function(a){var b=new Xg;a=Ac(a);for(var c=0;c<a.length;c++){var e=a[c];this.contains(e)&&b.add(e)}return b};v.Dd=function(){return this.ga.Dd()};v.l=function(){return new Xg(this)};function Zg(a,b,c){this.$b=c||(a?ce(fe(a)):ce());Wg.call(this,this.$b.Wc("div",{style:"position:absolute;display:none;"}));this.of=new ae(1,1);this.je=new Xg;a&&$g(this,a);if(b!=s)if(a=this.t(),"textContent"in a)a.textContent=b;else if(a.firstChild&&3==a.firstChild.nodeType){for(;a.lastChild!=a.firstChild;)a.removeChild(a.lastChild);a.firstChild.data=b}else{for(;c=a.firstChild;)a.removeChild(c);a.appendChild(ee(a).createTextNode(String(b)))}}C(Zg,Wg);var ah=[];v=Zg.prototype;v.Sa=s;v.className="goog-tooltip";
+
+142 matches across 45 files

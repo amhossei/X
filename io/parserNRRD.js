@@ -122,6 +122,8 @@ X.parserNRRD.prototype.parse = function(container, object, data, flag) {
   var spacingZ = new goog.math.Vec3(this.vectors[2][0], this.vectors[2][1],
       this.vectors[2][2]).magnitude();
   object._spacing = [ spacingX, spacingY, spacingZ ];
+
+  window.console.log(object._spacing);
   // .. and set the default threshold
   // only if the threshold was not already set
   if (object._lowerThreshold == -Infinity) {
@@ -131,15 +133,21 @@ X.parserNRRD.prototype.parse = function(container, object, data, flag) {
     object._upperThreshold = max;
   }
 
+  // UPDATE
+
   // Create IJKtoXYZ matrix
-  var _spaceX = 1;
-  var _spaceY = 1;
-  var _spaceZ = 1;
+  // var _spaceX = 1;
+  // var _spaceY = 1;
+  // var _spaceZ = 1;
+
+  var _spaceX = object._spacing[0];
+  var _spaceY = object._spacing[1];
+  var _spaceZ = object._spacing[2];
 
   if (this.space == "left-posterior-superior") {
   
-    _spaceX = -1;
-    _spaceY = -1;
+    _spaceX = -object._spacing[0];
+    _spaceY = -object._spacing[1];
   
   }
   
@@ -174,22 +182,22 @@ X.parserNRRD.prototype.parse = function(container, object, data, flag) {
   else{
     goog.vec.Mat4.setRowValues(IJKToRAS,
       0,
-      _spaceX*this.vectors[0][0],
-      _spaceX*this.vectors[1][0],
-      _spaceX*this.vectors[2][0],
-      _spaceX*this.space_origin[0]);
+      -_spaceX,
+      0,
+      0,
+      0);
     goog.vec.Mat4.setRowValues(IJKToRAS,
       1,
-      _spaceY*this.vectors[0][1],
-      _spaceY*this.vectors[1][1],
-      _spaceY*this.vectors[2][1],
-      _spaceY*this.space_origin[1]);
+      0,
+      -_spaceY,
+      0,
+      0);
     goog.vec.Mat4.setRowValues(IJKToRAS,
       2,
-      _spaceZ*this.vectors[0][2],
-      _spaceZ*this.vectors[1][2],
-      _spaceZ*this.vectors[2][2],
-      _spaceZ*this.space_origin[2]);
+      0,
+      0,
+      _spaceZ,
+      0);
     goog.vec.Mat4.setRowValues(IJKToRAS,
       3,
       0,
@@ -218,6 +226,8 @@ X.parserNRRD.prototype.parse = function(container, object, data, flag) {
 
   // grab the RAS Dimensions
   MRI.RASSpacing = [res2[0] - res[0], res2[1] - res[1], res2[2] - res[2]];
+
+  window.console.log(MRI.RASSpacing);
   
   // grab the RAS Dimensions
   MRI.RASDimensions = [_rasBB[1] - _rasBB[0] + 1, _rasBB[3] - _rasBB[2] + 1, _rasBB[5] - _rasBB[4] + 1];

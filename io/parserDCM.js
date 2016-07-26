@@ -36,6 +36,7 @@ goog.require('X.object');
 goog.require('X.parser');
 goog.require('X.triplets');
 goog.require('goog.math.Vec3');
+//goog.require('ParserCornerstone.dumpFileWithoutReader');
 /**
  * Create a parser for DICOM files.
  * 
@@ -62,7 +63,6 @@ goog.inherits(X.parserDCM, X.parser);
 X.parserDCM.prototype.parse = function(container, object, data, flag) {
   // X.TIMER(this._classname + '.parse');
   // needed, for renderer2d and 3d legacy...
-
   object.MRI = {};
   object.MRI.loaded_files = 0;
 
@@ -84,7 +84,6 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
 
       // series undefined yet
       if(!series.hasOwnProperty(object.slices[i]['series_instance_uid'])){
-
         series[object.slices[i]['series_instance_uid']] = new Array();
         imageSeriesPushed[object.slices[i]['series_instance_uid']] = {};
 
@@ -105,7 +104,7 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
     // -> slices are ordered by series
     // -> slices within a series are unique
     ////////////////////////////////////////////////////////////////////////
-
+      
     // GLOBAL PARAMETERS
     // pointer to first image
     var seriesInstanceUID = Object.keys(series)[0];
@@ -179,7 +178,14 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
       // compute dist in this series
       first_image.map(computeDistance.bind(null, _z_cosine));
       // order by dist
+      /*first_image.sort(function(a,b){
+        var adist = a["image_position_patient"][0]+a["image_position_patient"][1]+a["image_position_patient"][2];
+        var bdist = b["image_position_patient"][0]+b["image_position_patient"][1]+b["image_position_patient"][2];
+        return adist-bdist
+      });*/
+
       first_image.sort(function(a,b){return a["dist"]-b["dist"]});
+      //window.console.log(first_image);
     
     }
     else if(first_image[0]['instance_number'] != first_image[1]['instance_number']){
@@ -221,17 +227,51 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
 
     }
 
+    function RecupClosePatientPosition(first_image) {
+      var ls = [];
+      var Pardefaut = 1000;
+      var Goodi= 0;
+      var Goodj= 0;
+      var distBetweenTwo = 0;
+      for (var i = 0; i < first_image.length; i++) {
+        ls.push(first_image[i]['image_position_patient']);
+      };
+      for (var i = 0; i < ls.length; i++) {
+        for (var j = 0; j < ls.length; j++) {
+          var _x = ls[i][0] - ls[j][0];
+          var _y = ls[i][1] - ls[j][1];
+          var _z = ls[i][2] - ls[j][2];
+          distBetweenTwo = Math.sqrt(_x*_x + _y*_y  + _z*_z);
+          
+          if (i!= j && distBetweenTwo< Pardefaut){
+            Pardefaut =distBetweenTwo;
+            Goodi = i;
+            Goodj = j;
+          }
+        };
+      };
+      return [ls[Goodi],ls[Goodj]];
+
+    }
+
     if( first_image_stacks > 1) {
 
       switch(_ordering){
         case 'image_position_patient':
-          // We work only on 2 first slices
-          var _first_position = first_image[ 0 ]['image_position_patient'];
-          var _second_image_position = first_image[ 1 ]['image_position_patient'];
+           //We work only on 2 first slices
+          var positions = RecupClosePatientPosition(first_image);
+          var _first_position = positions[0];
+          var _second_image_position = positions[1];
+          //var _first_position = first_image[ 0 ]['image_position_patient'];
+          //var _second_image_position = first_image[ 1 ]['image_position_patient'];
           var _x = _second_image_position[0] - _first_position[0];
           var _y = _second_image_position[1] - _first_position[1];
           var _z = _second_image_position[2] - _first_position[2];
           first_image[0]['pixel_spacing'][2] = Math.sqrt(_x*_x + _y*_y  + _z*_z);
+          // CHANGEMENT
+          document.getElementById("rendimage2").setAttribute("zspacing",first_image[0]['pixel_spacing'][2]);
+          document.getElementById("sliceZ").setAttribute("xspacing",first_image[0]['pixel_spacing'][0]);
+          document.getElementById("sliceY").setAttribute("yspacing",first_image[0]['pixel_spacing'][1]);
           break;
         case 'instance_number':
           first_image[0]['pixel_spacing'][2] = 1.0;
@@ -272,8 +312,13 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
         var _y = _last_image_position[1] - _first_position[1];
         var _z = _last_image_position[2] - _first_position[2];
         var _distance_position = Math.sqrt(_x*_x + _y*_y  + _z*_z);
+        window.console.log(_last_image_position[2]+"  "+_first_position[2]);
+        window.console.log(_distance_position);
+        window.console.log(first_image[0]['pixel_spacing'][2]);
         //normalize by z spacing
         first_image_expected_nb_slices += Math.round(_distance_position/first_image[0]['pixel_spacing'][2]);
+        //first_image_expected_nb_slices = 2;
+        window.console.log("nbSlices"+first_image_expected_nb_slices);
         break;
       case 'instance_number':
         first_image_expected_nb_slices += Math.abs(first_image[ first_image_stacks - 1]['instance_number'] - first_image[0]['instance_number']);
@@ -360,7 +405,7 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
           break;
       }
 
-      first_image_data.set(_data, _distance_position * first_slice_size);
+      first_image_data.set(_data, Math.floor(_distance_position)* first_slice_size);
     }
 
     volumeAttributes.data = first_image_data;
@@ -459,24 +504,24 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
 
           goog.vec.Mat4.setRowValues(IJKToRAS,
             0,
-            -first_image[ 0 ]['image_orientation_patient'][0]*first_image[0]['pixel_spacing'][0],
-            -first_image[ 0 ]['image_orientation_patient'][3]*first_image[0]['pixel_spacing'][1],
-            -_z_cosine.x*first_image[0]['pixel_spacing'][2],
-            -_origin[0]);
+            -first_image[0]['pixel_spacing'][0],
+            0,
+            0,
+            0);
             // - first_image[0]['pixel_spacing'][0]/2);
           goog.vec.Mat4.setRowValues(IJKToRAS,
             1,
-            -first_image[ 0 ]['image_orientation_patient'][1]*first_image[0]['pixel_spacing'][0],
-            -first_image[ 0 ]['image_orientation_patient'][4]*first_image[0]['pixel_spacing'][1],
-            -_z_cosine.y*first_image[0]['pixel_spacing'][2],
-            -_origin[1]);
+            0,
+            -first_image[0]['pixel_spacing'][1],
+            0,
+            0);
             // - first_image[0]['pixel_spacing'][1]/2);
           goog.vec.Mat4.setRowValues(IJKToRAS,
             2,
-            first_image[ 0 ]['image_orientation_patient'][2]*first_image[0]['pixel_spacing'][0],
-            first_image[ 0 ]['image_orientation_patient'][5]*first_image[0]['pixel_spacing'][1],
-            _z_cosine.z*first_image[0]['pixel_spacing'][2],
-            _origin[2]);
+            0,
+            0,
+            first_image[0]['pixel_spacing'][2],
+            0);
             // + first_image[0]['pixel_spacing'][2]/2);
           goog.vec.Mat4.setRowValues(IJKToRAS,
             3,0,0,0,1);
@@ -566,6 +611,7 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
  * @return {number} The new bytePointer.
  */
  X.parserDCM.prototype.handleDefaults = function(_bytes, _bytePointer, _VR, _VL) {
+  //window.console.log(_bytePointer);
     switch (_VR){
       case 16975:
         // UL
@@ -574,6 +620,7 @@ X.parserDCM.prototype.parse = function(container, object, data, flag) {
       case 20053:
         // UN
       case 22351:
+      //window.console.log(_bytePointer);
         // OW
 
         // bytes to bits
@@ -636,9 +683,12 @@ X.parserDCM.prototype.parseStream = function(data, object) {
   // attach the given data
   this._data = data;
 
+
   if( typeof(object.slices) == "undefined" || object.slices == null ){
     object.slices = new Array();
   }
+
+  var DataSetCorner = dumpFileWithoutReader(this._data);
 
   // set slice default minimum required parameters
   var slice = {};
@@ -652,14 +702,49 @@ X.parserDCM.prototype.parseStream = function(data, object) {
   slice['transfer_syntax_uid'] = "no_transfer_syntax_uid";
 
   // scan the whole file as short (2 bytes)
-  var _bytes = this.scan('ushort', this._data.byteLength);
+  /*var _bytes = this.scan('ushort', this._data.byteLength);
   var _bytePointer = 66; // skip the 132 byte preamble
   var _tagGroup = null;
   var _tagElement = null;
   var _VR = null;
-  var _VL = null;
+  var _VL = null;*/
 
-  while (_bytePointer <  _bytes.length) {
+  slice['transfer_syntax_uid'] = DataSetCorner.string("x00020010");
+  slice['rows'] = DataSetCorner.uint16("x00280010");
+  slice['columns'] = DataSetCorner.uint16("x00280011");
+  slice.bits_allocated = DataSetCorner.uint16("x00280100");
+  slice['bits_stored'] = DataSetCorner.uint16("x00280101");
+  slice['number_of_images'] = DataSetCorner.uint16("x00280002");
+
+  var _pixel_spacing = DataSetCorner.string("x00280030");
+  _pixel_spacing = _pixel_spacing.split("\\");
+  slice['pixel_spacing'] = [ parseFloat(_pixel_spacing[0]), parseFloat(_pixel_spacing[1]), Infinity ];
+
+
+  slice['series_instance_uid'] = DataSetCorner.string("x0020000e");
+  var _position = DataSetCorner.string("x00200013");
+  slice['instance_number'] = parseInt(_position, 10);
+
+  var _image_position = DataSetCorner.string("x00200032");
+  _image_position = _image_position.split("\\");
+  slice['image_position_patient'] = [ parseFloat(_image_position[0]), parseFloat(_image_position[1]),
+                                        parseFloat(_image_position[2]) ];
+
+
+  var _image_orientation = DataSetCorner.string("x00200037");
+
+  _image_orientation = _image_orientation.split("\\");
+  slice['image_orientation_patient'] = [ parseFloat(_image_orientation[0]),
+                parseFloat(_image_orientation[1]), parseFloat(_image_orientation[2]),
+                parseFloat(_image_orientation[3]), parseFloat(_image_orientation[4]),
+                parseFloat(_image_orientation[5]) ];
+
+  slice['sop_instance_uid'] = DataSetCorner.string("x00080018");
+  var _anatomical_orientation = DataSetCorner.string("x00102210");
+
+  /*while (_bytePointer <  _bytes.length) {
+    //testnmbr++;
+    //window.console.log(testnmbr);
 
     _tagGroup = _bytes[_bytePointer++];
     _tagElement = _bytes[_bytePointer++];
@@ -673,7 +758,6 @@ X.parserDCM.prototype.parseStream = function(data, object) {
     // var _b1 = (_VR & 0xFF00) >> 8;
     // window.console.log('_VR: '+_VR+' - ' + String.fromCharCode( _b0 ) + String.fromCharCode( _b1 ));
     // window.console.log('_VL: ' + _VL);
-
     // Implicit VR Little Endian case
     if((slice['transfer_syntax_uid'] == '1.2.840.10008.1.2') && (_VL == 0)){
       
@@ -748,11 +832,12 @@ X.parserDCM.prototype.parseStream = function(data, object) {
             }
             _pixel_spacing = _pixel_spacing.split("\\");
             slice['pixel_spacing'] = [ parseFloat(_pixel_spacing[0]), parseFloat(_pixel_spacing[1]), Infinity ];
+            //slice['pixel_spacing'] = [ 1, 1, Infinity ];
             break;
 
-          case 0x1052: // rescale intercept
-          case 0x1053: // rescale slope
-          case 0x1050: // WindowCenter
+          case 0x1052: /*rescale  Intercept 
+          case 0x1053: /* rescale slope 
+          case 0x1050: /* WindowCenter //_bytePointer+=_VL/2;
           case 0x1051: // WindowWidth
           case 0x0004: // "Photometric Interpretation"
           case 0x0102: // "High Bit"
@@ -770,7 +855,7 @@ X.parserDCM.prototype.parseStream = function(data, object) {
       case 0x0020:
         // Group of SLICE INFO
         switch (_tagElement) {
-          case 0x000e:
+          /*case 0x000e:
             // Series instance UID
             slice['series_instance_uid'] = "";
             var i = 0;
@@ -781,6 +866,7 @@ X.parserDCM.prototype.parseStream = function(data, object) {
               slice['series_instance_uid'] += String.fromCharCode(_b0);
               slice['series_instance_uid'] += String.fromCharCode(_b1);
             }
+            window.console.log( slice['series_instance_uid']);
             break;
           case 0x0013:
             var _position = '';
@@ -871,7 +957,30 @@ X.parserDCM.prototype.parseStream = function(data, object) {
               slice['sop_instance_uid'] += String.fromCharCode(_b1);
             }
             break;
+          //CHANGEMENT
+          case 0x1030:
 
+            slice['patient_info1'] ="";
+            var i = 0;
+            for (i = 0; i < _VL / 2; i++) {
+              var _short = _bytes[_bytePointer++];
+              var _b0 = _short & 0x00FF;
+              var _b1 = (_short & 0xFF00) >> 8;
+              slice['patient_info1'] += String.fromCharCode(_b0);
+              slice['patient_info1'] += String.fromCharCode(_b1);
+            }
+            break;
+          case 0x103e:
+            slice['patient_info2'] ="";
+            var i = 0;
+            for (i = 0; i < _VL / 2; i++) {
+              var _short = _bytes[_bytePointer++];
+              var _b0 = _short & 0x00FF;
+              var _b1 = (_short & 0xFF00) >> 8;
+              slice['patient_info2'] += String.fromCharCode(_b0);
+              slice['patient_info2'] += String.fromCharCode(_b1);
+            }
+            break;
           default:
             _bytePointer = X.parserDCM.prototype.handleDefaults(_bytes, _bytePointer, _VR, _VL);
             break;
@@ -898,6 +1007,21 @@ X.parserDCM.prototype.parseStream = function(data, object) {
               _anatomical_orientation += String.fromCharCode(_b1);
             }
             break;
+          case 0x0010:
+            // anatomical orientation
+            // pixel spacing
+            slice['patient_name'] ="";
+            // pixel spacing is a delimited string (ASCII)
+            var i = 0;
+            for (i = 0; i < _VL / 2; i++) {
+              var _short = _bytes[_bytePointer++];
+              var _b0 = _short & 0x00FF;
+              var _b1 = (_short & 0xFF00) >> 8;
+              slice['patient_name'] += String.fromCharCode(_b0);
+              slice['patient_name'] += String.fromCharCode(_b1);
+            }
+            break;
+
 
           default:
             _bytePointer = X.parserDCM.prototype.handleDefaults(_bytes, _bytePointer, _VR, _VL);
@@ -939,42 +1063,47 @@ X.parserDCM.prototype.parseStream = function(data, object) {
         break;
       }
 
-    }
-
-
+    }*/
 
     switch (slice.bits_allocated) {
       case 8:
         slice.data = new Uint8Array(slice['columns'] * slice['rows']);
+        //_data = new Uint8Array(slice['columns'] * slice['rows']);
         break;
       case 16:
         slice.data = new Uint16Array(slice['columns'] * slice['rows']);
+        //_data = new Uint16Array(slice['columns'] * slice['rows']);
         break;
       case 32:
         slice.data = new Uint32Array(slice['columns'] * slice['rows']);
+        //_data = new Uint32Array(slice['columns'] * slice['rows']);
         break;
     }
 
+    this._data = [];
   // no need to jump anymore, parse data as any DICOM field.
   // jump to the beginning of the pixel data
-  this.jumpTo(this._data.byteLength - slice['columns'] * slice['rows'] * 2);
+  //this.jumpTo(this._data.byteLength - slice['columns'] * slice['rows'] * 2);
   // check for data type and parse accordingly
-  var _data = null;
-
-  switch (slice.bits_allocated) {
-  case 8:
-    _data = this.scan('uchar', slice['columns'] * slice['rows']);
-    break;
-  case 16:
-    _data = this.scan('ushort', slice['columns'] * slice['rows']);
-
-    break;
-  case 32:
-    _data = this.scan('uint', slice['columns'] * slice['rows']);
-    break;
+  for (var i = 0; i < slice['columns'] * slice['rows']; i++) {
+    switch (slice.bits_allocated) {
+      case 8:
+        //_data = this.scan('uchar', slice['columns'] * slice['rows']);
+        this._data.push(DataSetCorner.string("x7fe00010",i));
+        break;
+      case 16:
+        //_data = this.scan('ushort', slice['columns'] * slice['rows']);
+        this._data.push(DataSetCorner.uint16("x7fe00010",i));
+        break;
+      case 32:
+        //_data = this.scan('uint', slice['columns'] * slice['rows']);
+        this._data.push(DataSetCorner.uint32("x7fe00010",i));
+        break;
   }
+  };
 
-  slice['data'] = _data;
+
+  slice['data'] = this._data;
 
   object.slices.push(slice);
 

@@ -744,6 +744,18 @@ X.parser.xyBBox = function(_solutionsXY){
   return _xyBBox;
 };
 
+function NumberInListe(x,ls1) {
+  if(Math.abs(x-ls1[0])<= Math.abs(x-ls1[1]) && Math.abs(x-ls1[0])<= Math.abs(x-ls1[2]) ){
+    return ls1[0];
+  }
+  else if (Math.abs(x-ls1[1])<= Math.abs(x-ls1[0]) && Math.abs(x-ls1[1])<= Math.abs(x-ls1[2]) ){
+    return ls1[1];
+  }
+  else{
+    return ls1[2];
+  }
+}
+
 /**
  * Perform the actual reslicing
  *
@@ -759,9 +771,11 @@ X.parser.xyBBox = function(_solutionsXY){
  * @return The target slice.
  * @static
  */
-X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color, _bbox, _IJKVolume, object, hasLabelMap, colorTable){
+X.parser.reslice2 = function(indexSlice,_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color, _bbox, _IJKVolume, object, hasLabelMap, colorTable){
 
   var sliceXY = new X.slice();
+
+  // window.console.log("reslicing2");
 
   // normalize slice normal (just in case)
   goog.vec.Vec3.normalize(_sliceNormal, _sliceNormal);
@@ -809,11 +823,10 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
   var _RASCenter = goog.vec.Vec4.createFloat32();
   goog.vec.Mat4.multMat(_XYToRAS,_xyCenter, _RASCenter);
 
-  var _wmin =  Math.floor(_xyBBox[0]);
-  var _wmax =  Math.ceil(_xyBBox[1]);
-  // window.console.log(_xyBBox);
-  // var _wmin =  _xyBBox[0];
-  // var _wmax =  _xyBBox[1];
+  //var _wmin =  Math.floor(_xyBBox[0]);
+  //var _wmax =  Math.ceil(_xyBBox[1]);
+  var _wmin =  _xyBBox[0];
+  var _wmax =  _xyBBox[1];
 
   // if the slice only has to intersections with the volume BBox
   // (can happens if the slice is right on the edge of the volume)
@@ -825,10 +838,10 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
 
   var _swidth = _wmax - _wmin;
 
-  var _hmin = Math.floor(_xyBBox[2]);
-  var _hmax = Math.ceil(_xyBBox[3]);
-  // var _hmin = _xyBBox[2];
-  // var _hmax = _xyBBox[3];
+  //var _hmin = Math.floor(_xyBBox[2]);
+  //var _hmax = Math.ceil(_xyBBox[3]);
+  var _hmin = _xyBBox[2];
+  var _hmax = _xyBBox[3];
 
   // if the slice only has to intersections with the volume BBox
   // (can happens if the slice is right on the edge of the volume)
@@ -842,6 +855,8 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
 
   var _resX = _sliceXYSpacing[0];
   var _resY = _sliceXYSpacing[1];
+  // window.console.log('spacing x :' + _resX);
+  // window.console.log('spacing y :' + _resY);
 
   // not sure why?
   var _epsilon = 0.0000001;
@@ -850,12 +865,17 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
   var _cswidth = Math.ceil(_swidth/_resX);
   var _csheight = Math.ceil(_sheight/_resY);
 
+  _cswidth = NumberInListe(_cswidth,[object._dimensions[0],object._dimensions[1],object._dimensions[2]]);
+
+  _csheight = NumberInListe(_csheight,[object._dimensions[0],object._dimensions[1],object._dimensions[2]]);
+
   var _csize =  _cswidth*_csheight;
   var textureSize = 4 * _csize;
   var textureForCurrentSlice = new Uint8Array(textureSize);
   var pixelTexture = new X.texture();
   pixelTexture._rawDataWidth = _cswidth;
   pixelTexture._rawDataHeight = _csheight;
+  // window.console.log("w h"+_cswidth+"  "+ _csheight);
 
 
   var _indexIJK = goog.vec.Vec4.createFloat32();
@@ -863,41 +883,99 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
   var _XYToIJK = goog.vec.Mat4.createFloat32();
   goog.vec.Mat4.multMat(object._RASToIJK,_XYToRAS, _XYToIJK);
 
-  var _he = _hmax - _epsilon;
-  var _we = _wmax - _epsilon;
+  //var _he = _hmax - _epsilon;
+  //var _we = _wmax - _epsilon;
+
+
+  var _he = _hmax;
+  var _we = _wmax;
 
   var _p = 0;
   var _iWidth = 0;
   var _iHeight = 0;
   var j = _hmin;
   var i = _wmin;
+  var jprec;
+  var iprec;
+  var kprec;
+  
 
-  for (j = _hmin; j <= _he; j+=_resY) {
+  _cswidth = NumberInListe(_cswidth,[object._dimensions[0]-1,object._dimensions[1]-1,object._dimensions[2]-1]);
 
+  _csheight = NumberInListe(_csheight,[object._dimensions[0]-1,object._dimensions[1]-1,object._dimensions[2]-1]);
+
+  /*if(_sliceNormal[1] == 1){
+    var temp = _csheight;
+    _csheight = _cswidth;
+    _cswidth = temp:
+  }*/
+  //for (var __j =0; __j<= _csheight; __j++){
+  for (var __j = _csheight; __j>=0; __j--){
+  //for (j = _hmin; j <= _he; j+=_resY) {
+    j+=_resY;
     _iHeight++;
     _iWidth = 0;
     _indexXY[1] = j;
     i = _wmin;
-
-    for (i = _wmin; i <= _we; i+=_resX) {
+    //for (var __i = 0; __i <= _cswidth; __i++){
+    for (var __i = _cswidth; __i>= 0; __i--){
+    //for (i = _wmin; i <= _we; i+=_resX) {
+      i+=_resX
       _iWidth++;
       //
       _indexXY[0] = i;
 
       // convert to RAS
       // convert to IJK
-      goog.vec.Mat4.multVec4(_XYToIJK, _indexXY, _indexIJK);
+      //goog.vec.Mat4.multVec4(_XYToIJK, _indexXY, _indexIJK);
+
+      if(_sliceNormal[2] == 1){
+         window.console.log("z");
+        var _k = Math.round(indexSlice);
+        var _j = Math.round(__j);
+        var _i = Math.round(__i);
+      }
+      if(_sliceNormal[1] == 1){
+         window.console.log("y");
+        // testification
+        var _k = Math.round(__j);
+        var _j = Math.round(indexSlice);
+        var _i = Math.round(__i);
+        /*if (_k != kprec){
+          window.console.log("coord k");
+          window.console.log(_k);
+        }*/
+      }
+      if(_sliceNormal[0] == 1){
+         window.console.log("x");
+        var _k = Math.round(__i);
+        var _j = Math.round(__j);
+        var _i = Math.round(indexSlice);
+
+          /*      if (_k != kprec){
+          window.console.log("coord k");
+          window.console.log(_k);
+        }*/
+      }
 
       // get value if there is a match, trnasparent if no match!
-      var textureStartIndex = _p * 4;
+      var textureStartIndex = _p;
 
-      var _k = Math.floor(_indexIJK[2]);
-      var _j = Math.floor(_indexIJK[1]);
-      var _i = Math.floor(_indexIJK[0]);
 
       if( (0 <= _i) && (_i < object._dimensions[0] ) &&
         (0 <= _j) && (_j < object._dimensions[1] ) &&
         (0 <= _k) && (_k < object._dimensions[2] )) {
+
+        /*if(_sliceNormal[1] == 1){
+                if (_k != kprec){
+          window.console.log("coord k");
+          window.console.log(_k);
+        }
+      }*/
+
+            kprec = _k;
+      jprec =_j;
+      iprec =_i;
 
         // map to 0 if necessary
         var pixval = _IJKVolume[_k][_j][_i];
@@ -936,19 +1014,30 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
 
       }
       else {
-
-      textureForCurrentSlice[textureStartIndex] = 0;
+      textureForCurrentSlice[textureStartIndex] = 255;
       textureForCurrentSlice[++textureStartIndex] = 0;
       textureForCurrentSlice[++textureStartIndex] = 0;
-      textureForCurrentSlice[++textureStartIndex] = 0;
+      textureForCurrentSlice[++textureStartIndex] = 255;
 
       }
 
-    _p++;
+    _p+=4;
 
     }
 
+
+
   }
+
+/*  if(_sliceNormal[1] == 1){
+    _iWidth = object._dimensions[0];
+    _iHeight = object._dimensions[2];
+
+  }
+  if (_sliceNormal[0] ==1){
+    _iWidth = object._dimensions[1];
+    _iHeight = object._dimensions[2];
+  }*/
 
   // setup slice texture
   pixelTexture._rawData = textureForCurrentSlice;
@@ -967,14 +1056,29 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
   sliceXY._width = _swidth;
   sliceXY._heightSpacing = _resY;
   sliceXY._height = _sheight;
+
   sliceXY._center = [_RASCenter[0], _RASCenter[1], _RASCenter[2]];
   // ADD SPACING OFFSET to center so it matches meshes/tracts perfectly
   sliceXY._front = [_sliceNormal[0], _sliceNormal[1], _sliceNormal[2]];
   sliceXY._right= [_rright[0], _rright[1], _rright[2]];
   sliceXY._up = [_rup[0], _rup[1], _rup[2]];
+    /*if(_sliceNormal[0] == 1){
+    sliceXY._hmin = _wmin;
+    sliceXY._hmax = _wmax;
+    sliceXY._wmin = _hmin;
+    sliceXY._wmax = _hmax;
+    sliceXY._iWidth = _iHeight;
+    sliceXY._iHeight = _iWidth;
+    sliceXY._width = _sheight;
+    sliceXY._widthSpacing = _resY;
+    sliceXY._heightSpacing = _resX;
+    sliceXY._height = _swidth;
+  }*/
+
   // more styling
   sliceXY._visible = false;
   sliceXY._volume = /** @type {X.volume} */(object);
+  //PROBLEME ICI
 
   // for labelmaps, don't create the borders since this would create them 2x
   // hasLabelMap == true means we are the volume
@@ -995,6 +1099,160 @@ X.parser.reslice2 = function(_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color
 
   return sliceXY;
 };
+
+/*X.parser.reslice2 = function(indexSlice,_sliceOrigin, _sliceXYSpacing, _sliceNormal, _color, _bbox, _IJKVolume, object, hasLabelMap, colorTable){
+    var sliceXY = new X.slice();
+
+    window.console.log(_sliceOrigin);
+    
+    window.console.log(_sliceXYSpacing);
+
+    window.console.log(_sliceNormal);
+
+    window.console.log(_color);
+
+    window.console.log(_bbox);
+
+    window.console.log(_IJKVolume);
+
+    var _csheight = 1;
+    var _cswidth = 1;
+
+    //axial
+    if(_sliceNormal[2] == 1){
+      window.console.log("axial");
+      window.console.log(_IJKVolume);
+      window.console.log(object._dimensions[0]);
+      window.console.log(object._dimensions[1]);
+      window.console.log(object._dimensions[2]);
+      window.console.log(_IJKVolume[0][0][0].length);
+      _cswidth = object._dimensions[0];
+      _csheight = object._dimensions[1];
+    }
+
+    //coronal
+    if(_sliceNormal[1] == 1){
+
+      window.console.log("coronal");
+      window.console.log(_IJKVolume);
+      _cswidth = object._dimensions[0];
+      _csheight = object._dimensions[2];
+      
+    }
+
+    //sagittal
+    if(_sliceNormal[0] == 1){
+      window.console.log(_IJKVolume);
+      _cswidth = object._dimensions[1];
+      _csheight = object._dimensions[2];
+      
+    }
+
+    var _csize =  _cswidth*_csheight;
+    var textureSize = 4 * _csize;
+    var textureForCurrentSlice = new Uint8Array(textureSize);
+    var pixelTexture = new X.texture();
+    pixelTexture._rawDataWidth = _cswidth;
+    pixelTexture._rawDataHeight = _csheight;
+    var _p = 0;
+
+    for (var __j = _csheight; __j>=0; __j--){
+      for (var __i = _cswidth; __i>= 0; __i--){
+
+        if(_sliceNormal[2] == 1){
+          var _k = Math.round(indexSlice);
+          var _j = Math.round(__j);
+          var _i = Math.round(__i);
+        }
+        if(_sliceNormal[1] == 1){
+          var _k = Math.round(__j);
+          var _j = Math.round(indexSlice);
+          var _i = Math.round(__i);
+        }
+        if(_sliceNormal[0] == 1){
+          var _k = Math.round(__i);
+          var _j = Math.round(__j);
+          var _i = Math.round(indexSlice);
+        }
+        var textureStartIndex = _p * 4;
+
+
+        if( (0 <= _i) && (_i < object._dimensions[0] ) &&
+        (0 <= _j) && (_j < object._dimensions[1] ) &&
+        (0 <= _k) && (_k < object._dimensions[2] )) {
+  
+
+          var pixval = _IJKVolume[_k][_j][_i];
+          var pixelValue_r = 0;
+          var pixelValue_g = 0;
+          var pixelValue_b = 0;
+          var pixelValue_a = 0;
+
+          pixelValue_r = pixelValue_g = pixelValue_b = 255 * ((pixval - object._min )/ (object._max - object._min));
+          pixelValue_a = 255;
+        
+          textureForCurrentSlice[textureStartIndex] = pixelValue_r;
+          textureForCurrentSlice[++textureStartIndex] = pixelValue_g;
+          textureForCurrentSlice[++textureStartIndex] = pixelValue_b;
+          textureForCurrentSlice[++textureStartIndex] = pixelValue_a;
+        }
+        else {
+
+          textureForCurrentSlice[textureStartIndex] = 0;
+          textureForCurrentSlice[++textureStartIndex] = 0;
+          textureForCurrentSlice[++textureStartIndex] = 0;
+          textureForCurrentSlice[++textureStartIndex] = 0;
+
+        }
+      }
+      _p++;
+    }
+
+    pixelTexture._rawData = textureForCurrentSlice;
+    sliceXY._texture = pixelTexture;
+
+      pixelTexture._rawData = textureForCurrentSlice;
+  sliceXY._texture = pixelTexture;
+  // setup slice spacial information
+  //sliceXY._xyBBox = _xyBBox;
+  //sliceXY._XYToRAS = _XYToRAS;
+  //sliceXY._XYToIJK = _XYToIJK;
+  //sliceXY._hmin = _hmin;
+  //sliceXY._hmax = _hmax;
+  //sliceXY._wmin = _wmin;
+  //sliceXY._wmax = _wmax;
+  //sliceXY._iWidth = _iWidth;
+  //sliceXY._iHeight = _iHeight;
+  //sliceXY._widthSpacing = _resX;
+  //sliceXY._width = _swidth;
+  //sliceXY._heightSpacing = _resY;
+  //sliceXY._height = _sheight;
+  //sliceXY._center = [_RASCenter[0], _RASCenter[1], _RASCenter[2]];
+  // ADD SPACING OFFSET to center so it matches meshes/tracts perfectly
+  //sliceXY._front = [_sliceNormal[0], _sliceNormal[1], _sliceNormal[2]];
+  //sliceXY._right= [_rright[0], _rright[1], _rright[2]];
+  //sliceXY._up = [_rup[0], _rup[1], _rup[2]];
+  // more styling
+  sliceXY._visible = false;
+  sliceXY._volume = /* @type {X.volume} (object);
+  //PROBLEME ICI
+
+  if (goog.isDefAndNotNull(object._volume) && !hasLabelMap) {
+    sliceXY._borders = false;
+  }
+  else{
+    sliceXY._borders = true;
+  }
+
+  // create slice
+  sliceXY.create_();
+
+  // update visibility (has to be done after slice creation)
+  sliceXY._visible = false;
+
+  return sliceXY;
+
+}*/
 
 /**
  * Setup basic information for given slice orientation
@@ -1064,11 +1322,13 @@ X.parser.prototype.updateSliceInfo = function(_index, _sliceOrigin, _sliceNormal
   object._childrenInfo[_index]._sliceSpacing = _xySpacing[2];
   object._childrenInfo[_index]._sliceDirection = _sliceDirection;
 
+  window.console.log(object._childrenInfo[_index]._sliceXYSpacing);
+  window.console.log(object._childrenInfo[_index]._sliceSpacing);
+
   // ------------------------------------------
   // GET NUMBER OF SLICES
   // ------------------------------------------
-
-  var _nb = Math.floor(Math.abs(_dist/_xySpacing[2]));
+  var _nb = Math.round(Math.abs(_dist/_xySpacing[2]));
   object._range[_index] = _nb + 1;
   object._childrenInfo[_index]._nb = _nb + 1;
 
@@ -1182,6 +1442,8 @@ X.parser.prototype.reslice = function(object) {
   // GO RESLICE!
   // ------------------------------------------
 
+  window.console.log("sagittal");
+
   // ------------------------------------------
   // GO SAGITTAL
   // ------------------------------------------
@@ -1214,7 +1476,8 @@ X.parser.prototype.reslice = function(object) {
   _sliceOrigin[1] = object._childrenInfo[0]._solutionsLine[0][0][1] + object._childrenInfo[0]._sliceDirection[1]*Math.floor(object._childrenInfo[0]._nb/2);
   _sliceOrigin[2] = object._childrenInfo[0]._solutionsLine[0][0][2] + object._childrenInfo[0]._sliceDirection[2]*Math.floor(object._childrenInfo[0]._nb/2);
 
-  var _slice = X.parser.reslice2(_sliceOrigin, object._childrenInfo[0]._sliceXYSpacing, object._childrenInfo[0]._sliceNormal, object._childrenInfo[0]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
+  window.console.log(object._childrenInfo[0]._sliceXYSpacing);
+  var _slice = X.parser.reslice2(Math.floor(object._childrenInfo[0]._nb/2),_sliceOrigin, object._childrenInfo[0]._sliceXYSpacing, object._childrenInfo[0]._sliceNormal, object._childrenInfo[0]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
 
   if (object.hasLabelMap) {
     // if this object has a labelmap,
@@ -1227,6 +1490,9 @@ X.parser.prototype.reslice = function(object) {
 
   object._indexX = Math.floor(object._childrenInfo[0]._nb/2);
   object._indexXold = Math.floor(object._childrenInfo[0]._nb/2);
+
+
+  window.console.log("coronal");
 
   // ------------------------------------------
   // GO CORONAL
@@ -1242,9 +1508,9 @@ X.parser.prototype.reslice = function(object) {
 
   // NORMAL
   _sliceNormal = goog.vec.Vec3.createFloat32FromValues(
-     0,
-     1,
-     0);
+     0.00,
+     1.00,
+     0.00);
     goog.vec.Vec3.normalize(_sliceNormal, _sliceNormal);
   object._childrenInfo[1]._sliceNormal = _sliceNormal;
 
@@ -1261,7 +1527,7 @@ X.parser.prototype.reslice = function(object) {
   _sliceOrigin[1] = object._childrenInfo[1]._solutionsLine[0][0][1] + object._childrenInfo[1]._sliceDirection[1]*Math.floor(object._childrenInfo[1]._nb/2);
   _sliceOrigin[2] = object._childrenInfo[1]._solutionsLine[0][0][2] + object._childrenInfo[1]._sliceDirection[2]*Math.floor(object._childrenInfo[1]._nb/2);
 
-  _slice = X.parser.reslice2(_sliceOrigin, object._childrenInfo[1]._sliceXYSpacing, object._childrenInfo[1]._sliceNormal, object._childrenInfo[1]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
+  _slice = X.parser.reslice2(Math.floor(object._childrenInfo[1]._nb/2),_sliceOrigin, object._childrenInfo[1]._sliceXYSpacing, object._childrenInfo[1]._sliceNormal, object._childrenInfo[1]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
 
   if (object.hasLabelMap) {
     // if this object has a labelmap,
@@ -1274,6 +1540,8 @@ X.parser.prototype.reslice = function(object) {
 
   object._indexY = Math.floor(object._childrenInfo[1]._nb/2);
   object._indexYold = Math.floor(object._childrenInfo[1]._nb/2);
+
+  window.console.log("axial");
 
   // ------------------------------------------
   // GO AXIAL
@@ -1303,11 +1571,18 @@ X.parser.prototype.reslice = function(object) {
   // Create empty array for all slices in this direction
   object._children[2]._children = new Array(object._childrenInfo[2]._nb);
 
+  //CHANGEMENT
+  var CanvasXTKPXO = document.getElementById('canvasXTKX');
+  CanvasXTKPXO.setAttribute("nbslices",object._childrenInfo[2]._nb);
+  var CanvasXTKPYO = document.getElementById('canvasXTKY');
+  CanvasXTKPYO.setAttribute("nbslices",object._childrenInfo[2]._nb);
+  //
+
   _sliceOrigin[0] = object._childrenInfo[2]._solutionsLine[0][0][0] + object._childrenInfo[2]._sliceDirection[0]*Math.floor(object._childrenInfo[2]._nb/2);
   _sliceOrigin[1] = object._childrenInfo[2]._solutionsLine[0][0][1] + object._childrenInfo[2]._sliceDirection[1]*Math.floor(object._childrenInfo[2]._nb/2);
   _sliceOrigin[2] = object._childrenInfo[2]._solutionsLine[0][0][2] + object._childrenInfo[2]._sliceDirection[2]*Math.floor(object._childrenInfo[2]._nb/2);
 
-  _slice = X.parser.reslice2(_sliceOrigin, object._childrenInfo[2]._sliceXYSpacing, object._childrenInfo[2]._sliceNormal, object._childrenInfo[2]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
+  _slice = X.parser.reslice2(Math.floor(object._childrenInfo[2]._nb/2),_sliceOrigin, object._childrenInfo[2]._sliceXYSpacing, object._childrenInfo[2]._sliceNormal, object._childrenInfo[2]._color, object._BBox, object._IJKVolume, object, object.hasLabelMap, object._colorTable);
 
   if (object.hasLabelMap) {
     // if this object has a labelmap,

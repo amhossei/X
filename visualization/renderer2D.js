@@ -119,6 +119,23 @@ X.renderer2D = function() {
    * @type {number}
    * @protected
    */
+
+  this._drawingframeBuffer = null;
+
+  /**
+   * The rendering context of the slice frame drawing.
+   *
+   * @type {?Object}
+   * @protected
+   */
+  this._drawingframeBufferContext = null;
+
+  /**
+   * A frame buffer for drawing data.
+   *
+   * @type {?Element}
+   * @protected
+   */
   this._sliceWidth = 0;
 
   /**
@@ -489,6 +506,7 @@ X.renderer2D.prototype.init = function() {
   // create an invisible canvas as a framebuffer
   this._frameBuffer = goog.dom.createDom('canvas');
   this._labelFrameBuffer = goog.dom.createDom('canvas');
+  this._drawingFrameBuffer = goog.dom.createDom('canvas');
 
   //
   //
@@ -501,10 +519,16 @@ X.renderer2D.prototype.init = function() {
   // this._labelFrameBuffer.style.imageRendering = 'optimize-contrast';
   // this._labelFrameBuffer.style.msInterpolationMode = 'nearest-neighbor';
     this._labelFrameBuffer.style.imageRendering = 'pixelated';
+    this._drawingFrameBuffer.style.imageRendering = 'pixelated';
 
   // listen to window/level events of the camera
   goog.events.listen(this._camera, X.event.events.WINDOWLEVEL,
       this.onWindowLevel_.bind(this));
+
+  //TRY CHANGE
+  /*//document.getElementById("Zoombutt").addEventListener('mousedown',this.resetViewAndRender,false);
+    goog.events.listen(document.getElementById("Zoombutt"), X.event.events.RESETVIEW,
+      this.resetViewAndRender.bind(this));*/
 
 };
 
@@ -744,9 +768,14 @@ X.renderer2D.prototype.update_ = function(object) {
   _frameBuffer2.width = _width;
   _frameBuffer2.height = _height;
 
+  var _frameBuffer3 = this._drawingFrameBuffer;
+  _frameBuffer3.width = _width;
+  _frameBuffer3.height = _height;
+
   // .. and the context
   this._frameBufferContext = _frameBuffer.getContext('2d');
   this._labelFrameBufferContext = _frameBuffer2.getContext('2d');
+  this._drawingFrameBufferContext = _frameBuffer3.getContext('2d');
 
   // do the following only if the object is brand-new
   if (!existed) {
@@ -764,6 +793,16 @@ X.renderer2D.prototype.update_ = function(object) {
  */
 X.renderer2D.prototype.autoScale_ = function() {
 
+  if(this._orientation == "X"){
+    var tmp = this._sliceWidth;
+    this._sliceWidth = this._sliceHeight;
+    this._sliceHeight = tmp;
+
+    tmp = this._sliceWidthSpacing;
+    this._sliceWidthSpacing = this._sliceHeightSpacing;
+    this._sliceHeightSpacing = tmp;
+  }
+
   // let's auto scale for best fit
   var _wScale = this._width / (this._sliceWidth * this._sliceWidthSpacing);
   var _hScale = this._height / (this._sliceHeight * this._sliceHeightSpacing);
@@ -773,6 +812,7 @@ X.renderer2D.prototype.autoScale_ = function() {
   // propagate scale (zoom) to the camera
   var _view = this._camera._view;
   _view[14] = _autoScale;
+
 
 };
 
@@ -804,7 +844,6 @@ X.renderer2D.prototype.xy2ijk = function(x, y) {
   var _volume = this._topLevelObjects[0];
   var _view = this._camera._view;
   var _currentSlice = null;
-
   var _sliceWidth = this._sliceWidth;
   var _sliceHeight = this._sliceHeight;
   var _sliceWSpacing = null;
@@ -816,22 +855,22 @@ X.renderer2D.prototype.xy2ijk = function(x, y) {
     _currentSlice = this._slices[parseInt(_volume['indexY'], 10)];
     _sliceWSpacing = _currentSlice._widthSpacing;
     _sliceHSpacing = _currentSlice._heightSpacing;
-    this._orientationColors[0] = 'rgba(255,0,0,.3)';
-    this._orientationColors[1] = 'rgba(0,0,255,.3)';
+    this._orientationColors[0] = 'rgba(255,255,255,.3)';
+    this._orientationColors[1] = 'rgba(255,255,255,.3)';
 
   } else if (this._orientation == "Z") {
     _currentSlice = this._slices[parseInt(_volume['indexZ'], 10)];
     _sliceWSpacing = _currentSlice._widthSpacing;
     _sliceHSpacing = _currentSlice._heightSpacing;
-    this._orientationColors[0] = 'rgba(255,0,0,.3)';
-    this._orientationColors[1] = 'rgba(0,255,0,.3)';
+    this._orientationColors[0] = 'rgba(255,255,255,.3)';
+    this._orientationColors[1] = 'rgba(255,255,255,.3)';
 
   } else {
     _currentSlice = this._slices[parseInt(_volume['indexX'], 10)];
     _sliceWSpacing = _currentSlice._heightSpacing;
     _sliceHSpacing = _currentSlice._widthSpacing;
-    this._orientationColors[0] = 'rgba(0,255,0,.3)';
-    this._orientationColors[1] = 'rgba(0,0,255,.3)';
+    this._orientationColors[0] = 'rgba(255,255,255,.3)';
+    this._orientationColors[1] = 'rgba(255,255,255,.3)';
 
     var _buf = _sliceWidth;
     _sliceWidth = _sliceHeight;
@@ -954,6 +993,307 @@ X.renderer2D.prototype.xy2ijk = function(x, y) {
   return null;
 };
 
+/**
+3 functions allowing the the draw of dashed lines
+xA,yA : coordinates of the beginning point of the dashed line
+xB,yb : coordinates of the ending point of the dashed line
+l,L : length of the lines and space between the lines respetively
+ctx : ctx onwhich the drawing is made
+**/
+
+function Norm(xA,yA,xB,yB) {return Math.sqrt(Math.pow(xB-xA,2)+Math.pow(yB-yA,2));}
+
+function DashedLine(xA,yA,xB,yB,L,l,ctx) {
+ Nhatch=Norm(xA,yA,xB,yB)/(L+l);
+ x1=xA;y1=yA;
+ for (i=0;i < Nhatch; i++) {
+  newXY=Hatch(xA,yA,xB,yB,x1,y1,L);
+  x2=newXY[0];y2=newXY[1];
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  newXY=Hatch(xA,yA,xB,yB,x2,y2,l);
+  x1=newXY[0];
+  y1=newXY[1];
+ }
+ //ctx.closePath();
+}
+
+function Hatch(xA,yA,xB,yB,x1,y1,l) {
+ a=(yB-yA)/(xB-xA);b=yA-a*xA;// Equation reduite y=ax+b de (AB): 
+ if ((xB-xA)>0) {sgn=1;} else {sgn=-1;}
+ x2=sgn*l/Math.sqrt(1+a*a)+x1;
+ y2=a*x2+b;
+ if (Norm(x1,y1,x2,y2)>Norm(x1,y1,xB,yB)) {x2=xB;y2=yB;}
+ return [x2,y2];
+}
+
+
+////
+
+
+function InitializeDrawinterface(drawingcontext, labelcontext, interactor, upperobject, CurrentVolume) {
+  //var _self = this;
+  var CurrVolume = CurrentVolume; 
+  var _upperobject = upperobject;
+  var labelctx, drawingctx;
+  var colorchosen = "rgba(255,255,0,1)";
+    //listHisto holds the history of polygon drawn , after edition only one polygon is permitted, this variable doesn't make any sense 
+    // in this configuration
+    var listHisto = [];
+    //listTools will contain all the tools implemented
+    var listTools = [];
+    // if the polygon is closed, is set to true
+    var polygonClosed = false;
+    var tool;
+    var tool_default = 'pencil';
+    var current_tool = "pencil";
+  //variable used to decide which tool should be used at which moment especially for selectp and zoom
+  var pointmoved = false;
+  var pointmoved2 = false;
+  // position of the mouse
+  var mousex = 0;
+  var mousey = 0;
+
+    // variable grouping the points of a single polygon
+  var points = [];
+
+  function init () {
+    labelctx = labelcontext;
+    drawingctx = drawingcontext;
+
+    labelctx.imageSmoothingEnabled = false;
+    drawingctx.imageSmoothingEnabled = false;
+
+    // Activate the default tool.
+      if (tools[tool_default]) {
+        tool = new tools[tool_default]();
+        current_tool = tool_default;
+      }
+
+      document.addEventListener('mousedown',function (ev) {
+        ev_canvasReady(ev);
+      },false);
+
+    document.addEventListener('mouseup', ev_canvasReady, false);
+    document.addEventListener('mousemove',   function(ev) {
+          //this variable is used to attache the keydown to the right viewer
+          //lastDownTarget = ev.target.id;
+          ev_canvasReady(ev);
+    }, false);
+
+    document.addEventListener('click',function (ev) {
+        CurrVolume.modified;
+        if (ev.which == 1) {
+            ev_canvasReady(ev);
+        }
+    },false);
+
+      document.addEventListener('keydown', function(ev) {
+        // if we push enter and the polygon is closed, then validate it ( draw it on the right canvas in red)
+        if (ev.keyCode == 13 && polygonClosed){
+          ev.preventDefault();
+          img_update();
+          ev.stopPropagation();
+        }
+      }, false);
+
+    // document.addEventListener("mousemove",function (ev) {
+    //   if (interactor._mouseInside){
+    //       for (var i = listHisto.length - 1; i >= 0; i--) {
+    //         indexp = nearpListe([ev._x,ev._y],listHisto[i],5);
+    //         if (indexp !=1000){
+    //             document.getElementById('canvasXTKP').style.cursor = "pointer";
+    //           break;}
+    //         else{document.getElementById('canvasXTKP').style.cursor = "auto";}
+    //       };
+    //   }
+    // },false);
+  }
+
+
+  function ev_canvasReady(ev){
+      //ev_canvas(ev);
+
+      if (ev.layerX || ev.layerX == 0) { // Firefox
+        ev._x = ev.layerX;
+        ev._y = ev.layerY;
+      } if (ev.offsetX || ev.offsetX == 0) { // Opera
+        ev._x = ev.offsetX;
+        ev._y = ev.offsetY;
+      }
+      // Call the event handler of the tool.
+      var __ijk = _upperobject.xy2ijk(ev._x,ev._y);
+      if (__ijk) {
+        mousex = __ijk[0][0];
+        mousey = __ijk[0][1];
+      }
+      else{
+        mousex = 0;
+        mousey = 0;
+      };
+      var func = tool[ev.type];
+      if (func) {
+        func(ev);
+      }
+  }
+
+  // This function draws the #imageTemp canvas on top of #imageView, after which 
+  // #imageTemp is cleared. This function is called each time when the user 
+  // completes a drawing operation.
+  function img_update (ev) {
+      //rend2 = document.getElementById("rendimage2");
+      var oldcolor = colorchosen;
+      colorchosen = "rgba(255,0,0,0.6)";
+      drawingctx.clearRect(0, 0, drawingctx.canvas.width, drawingctx.canvas.height);
+      var oldbrushWidth = brushWidth;
+      brushWidth = 1;
+      redrawall(false);
+      brushWidth = oldbrushWidth;
+    labelctx.drawImage(context.canvas, 0, 0);
+    drawingctx.clearRect(0, 0, drawingctx.canvas.width, drawingctx.canvas.height);
+      var ImageData = labelctx.getImageData(0,0,context.canvas.width,context.canvas.height);
+      var data = ImageData.data;
+      for (var i = 0; i < data.length; i+=4) {
+        if (data[i+3]>0) {
+          data[i]=255;
+          data[i+1]=0;
+          data[i+2]=0;
+          data[i+3]=150;
+        };
+      };
+      labelctx.putImageData(ImageData,0,0);
+      listHisto = [];
+      colorchosen = oldcolor;
+      polygonClosed = false;
+      tool = new tools["pencil"]();
+      current_tool = "pencil";
+      Majtoolsbutt();
+      // call the funciton that save the file server-side
+      //ExportFile(ev);
+  }
+
+    // This object holds the implementation of each drawing tool.
+    var tools = {};
+
+  // The drawing pencil.
+  tools.pencil = function () {
+      document.getElementById('canvasXTKP').style.cursor = "none";
+      var tool = this;
+      this.name = "pencil";
+      this.started = false;
+      changeBrushwidth(6);
+      //document.getElementById("thicknessInput").style.opacity = 1;
+
+      // This is called when you start holding down the mouse button.
+      // This starts the pencil drawing.
+      this.mousedown = function (ev) {
+          // window.console.log("mousedown");
+          tool.started = true;
+          // get the right canvas (red one)
+          labelctx.beginPath();
+          labelctx.moveTo(mousex, mousey);
+          labelctx.fillStyle = "rgba(255,0,0,0.6)";
+          labelctx.fillRect(mousex - brushWidth/2, mousey- brushWidth/2, brushWidth,brushWidth);
+          ev.stopPropagation();
+      };
+
+      // This function is called every time you move the mouse. Obviously, it only 
+      // draws if the tool.started state is set to true (when you are holding down 
+      // the mouse button).
+      this.mousemove = function (ev) {
+        // window.console.log("mousemove");
+        //mousex = ev._x;
+        //mousey = ev._y;
+        if (tool.started) {
+          // window.console.log("tool started");
+          labelctx.lineTo(mousex, mousey);
+          labelctx.strokeStyle = "rgba(255,0,0,0.4)";
+          labelctx.lineWidth = brushWidth;
+          labelctx.stroke();
+        }
+
+        drawingctx.fillStyle = "rgba(255,0,0,0.6)";
+        drawingctx.lineWidth = 1;
+        drawingctx.clearRect(0, 0, drawingctx.canvas.width, drawingctx.canvas.height);
+        drawingctx.fillRect(mousex - brushWidth/2, mousey- brushWidth/2, brushWidth,brushWidth);
+        redrawall(true);
+      };
+
+      // This is called when you release the mouse button.
+      this.mouseup = function (ev) {
+        if (tool.started) {
+          tool.mousemove(ev);
+          tool.started = false;
+          // var ImageData = labelctx.getImageData(0,0,drawingctx.canvas.width,drawingctx.canvas.height);
+          // var data = ImageData.data;
+          // for (var i = 0; i < data.length; i+=4) {
+          //   if (data[i+3]>0) {
+          //     data[i]=255;
+          //     data[i+1]=0;
+          //     data[i+2]=0;
+          //     data[i+3]=150;
+          //   };
+          // };
+          // // put the pixel in the canvas
+          // labelctx.putImageData(ImageData,0,0);
+        }
+      };
+  };
+
+  // change the brushwidth
+  function changeBrushwidth (newsize) {
+      //var brushw = document.getElementById("brushw");
+      brushWidth = newsize;
+      //brushw.value = newsize;
+  }
+
+  // draw all the polygons, 
+  //if point is set to true : draw big points on the edges of the polygon
+  //if point is set to false: doesn't draw the bigpoints, and fill the polygon
+  function redrawall (point) {
+      // if point = true, draw the points
+      //var lnhisto = listHisto.length;
+      for (var i = listHisto.length - 1; i >= 0; i--) {
+        var lnfigure = listHisto[i].length;
+        var points = listHisto[i];
+        drawingctx.beginPath();
+        drawingctx.lineWidth = 0.5;
+        drawingctx.moveTo(points[0][0], points[0][1]);
+        drawingctx.fillStyle = colorchosen;
+        for (var j = 0; j < lnfigure; j++) {
+          //draw big points
+          if (point){
+            drawingctx.fillStyle = "rgba(255,255,102,0.6)";
+            drawPoint(points[j][0],points[j][1],3);
+            drawingctx.fillStyle = colorchosen;
+          }
+          //draw line
+          drawingctx.lineTo(points[j][0], points[j][1]);
+        }
+        drawingctx.strokeStyle = colorchosen;
+        drawingctx.lineWidth = 0.5;
+        if(point){
+          drawingctx.stroke();
+          drawingctx.closePath();
+        }
+        else{
+          drawingctx.closePath();
+          drawingctx.fill();
+        }
+
+      };
+  }
+
+  init();
+
+}
+
+
+////
+
+
+
+
+
 
 /**
  * @inheritDoc
@@ -978,11 +1318,9 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
   var _volume = this._topLevelObjects[0];
   var _currentSlice = null;
   if (this._orientationIndex == 0) {
-
     _currentSlice = _volume['indexX'];
 
   } else if (this._orientationIndex == 1) {
-
     _currentSlice = _volume['indexY'];
 
   } else {
@@ -1020,7 +1358,6 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
   // transform the canvas according to the view matrix
   // .. this includes zoom
   this._normalizedScale = Math.max(_view[14], 0.0001);
-
   this._context.setTransform(this._normalizedScale, 0, 0, this._normalizedScale, 0, 0);
 
   // .. and pan
@@ -1060,14 +1397,18 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
   //
   var _imageFBContext = this._frameBufferContext;
   var _labelFBContext = this._labelFrameBufferContext;
+  var _drawingFBContext = this._drawingFrameBufferContext;
 
   // grab the current pixels
   var _imageData = _imageFBContext
       .getImageData(0, 0, _sliceWidth, _sliceHeight);
   var _labelmapData = _labelFBContext.getImageData(0, 0, _sliceWidth,
       _sliceHeight);
+  var _drawingData = _drawingFBContext.getImageData(0, 0, _sliceWidth,
+      _sliceHeight);
   var _pixels = _imageData.data;
   var _labelPixels = _labelmapData.data;
+  var _drawingPixels = _drawingData.data;
   var _pixelsLength = _pixels.length;
 
   // threshold values
@@ -1099,6 +1440,10 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
     var _frameBuffer2 = this._labelFrameBuffer;
     _frameBuffer2.width = _width2;
     _frameBuffer2.height = _height2;
+
+    var _frameBuffer3 = this._drawingFrameBuffer;
+    _frameBuffer3.width = _width2;
+    _frameBuffer3.height = _height2;
 
     // loop through the pixels and draw them to the invisible canvas
     // from bottom right up
@@ -1150,6 +1495,7 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
                   Math.floor(_color.z), 255];
 
         if (_currentLabelMap) {
+          // window.console.log(this._orientation);
 
           // we have a label map here
           // check if all labels are shown or only one
@@ -1223,6 +1569,7 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
     // store the generated image data to the frame buffer context
     _imageFBContext.putImageData(_imageData, 0, 0);
     _labelFBContext.putImageData(_labelmapData, 0, 0);
+    _drawingFBContext.putImageData(_drawingData, 0, 0);
 
     // cache the current slice index and other values
     // which might require a redraw
@@ -1283,17 +1630,98 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
 
   }
 
+  // draw the drawing
+  drawingCondition = true;
+  if (drawingCondition){
+    this._context.drawImage(this._drawingFrameBuffer, _offset_x, _offset_y,
+        _sliceWidth * this._sliceWidthSpacing, _sliceHeight *
+            this._sliceHeightSpacing);
+  }
+
+  // if (this._orientation == "Y") {
+
+  // };
+
+  if (drawingCondition && this._orientation == "Z"){
+    InitializeDrawinterface(_drawingFBContext, _labelFBContext, this._interactor,this,_volume);
+     // window.console.log(_offset_x,_offset_y,_width,_height);
+    // window.console.log(_volume._labelmap._image[_volume['indexZ']][75][40]);
+     // var ImageData = _labelFBContext.getImageData(_offset_x,_offset_y, _sliceWidth * this._sliceWidthSpacing,_sliceHeight *
+     //         this._sliceHeightSpacing);
+    var ImageData = _labelFBContext.getImageData(0,0,150,150);
+    var data = ImageData.data;
+    // var _currentImage =  _volume._labelmap._IJKVolume[_volume['indexZ']];
+
+
+    // // var iterator = 0;
+    // for (var i = 0; i <  150; i++) {
+    //   for (var j = 0; j < 150; j++) {
+    //     // window.console.log("ici2");
+    //     // if (data[iterator+3]>0) {
+    //       // var __ijk = this.xy2ijk(i,j);
+    //        // window.console.log("ici");
+
+    //       _currentImage[i][j] = 2000;
+    //     // }
+    //     // iterator = iterator+4;
+    //   };
+    // };
+
+    labelMouse= document.getElementById("mousePos2");
+    labelMouse.innerHTML = "xcoor, yccor : "+ _volume['indexZ'];
+
+    var xcoor = 0;
+    var ycoor = 0;
+    var _currentImage =  _volume._labelmap._IJKVolume;
+    for (var i = 0; i < data.length; i+=4) {
+      if (data[i+3]>0) {
+        // var __ijk = this.xy2ijk(ycoor,xcoor);
+        // window.console.log(xcoor,ycoor);
+        _currentImage[_volume['indexZ']][ycoor][xcoor] = 2000;
+        // labelMouse.innerHTML += " (" + xcoor  + " , "+ ycoor + " "+ _volume['indexZ'] + ") ";
+        // if (__ijk) {
+        //   var _currentImage =  _volume._labelmap._IJKVolume;
+        //   _currentImage[__ijk[0][2]][__ijk[0][1]][__ijk[0][0]] = 2000;
+        //   window.console.log(xcoor,ycoor,__ijk[0][0],__ijk[0][1]);
+        // };
+      };
+
+      // window.console.log(data.length, xcoor, ycoor);
+      xcoor = xcoor+1;
+      if (xcoor >= 150){
+        //labelMouse.innerHTML += " (" + xcoor  + " , "+ ycoor + " "+ _volume['indexZ'] + ") ";
+        xcoor=0;
+        ycoor=ycoor+1;
+      }
+    };
+
+  }
+
+    var _mousePosition = this._interactor._mousePosition;
+
+    // UPDATE
+
+    labelMouse= document.getElementById("mousePos");
+    // labelMouse.value = " ";
+    labelMouse.innerHTML = "Mouse Position : " + _mousePosition[0]  + " , "+ _mousePosition[1];
+    
   // if enabled, show slice navigators
   if (this._config['SLICENAVIGATORS']) {
-    this._canvas.style.cursor = "none";
-
+    //this._canvas.style.cursor = "none";
     // but only if the shift key is down and the left mouse is not
+    //UPDATE CHANGE  : THE CROSS HAIR IS DISABLED , TO ENABLE IT PUT disable = false;
+    var disabled = false;
     if (this._interactor._mouseInside && this._interactor._shiftDown &&
-        !this._interactor._leftButtonDown) {
+        !this._interactor._leftButtonDown && !disabled) {
 
+      // window.console.log(_volume._labelmap._children.modified());
+      // _volume.modified(true);
+      this._canvas.style.cursor = "none";
+    
       var _mousePosition = this._interactor._mousePosition;
 
       // check if we are over the slice
+      // window.console.log(_mousePosition[0], _mousePosition[1]);
       var ijk = this.xy2ijk(_mousePosition[0], _mousePosition[1]);
 
       if (ijk) {
@@ -1304,6 +1732,7 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
         _volume._indexZ = ijk[0][2];
         _volume.modified(false);
 
+
         this['onSliceNavigation']();
 
         // draw the navigators
@@ -1311,12 +1740,19 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
 
         // in x-direction
         this._context.setTransform(1, 0, 0, 1, 0, 0);
+        //this._context.strokeStyle = "red";
+        //DashedLine(this._interactor._mousePosition[0],0,this._interactor._mousePosition[0], this._height,20,5,this._context);
         this._context.beginPath();
         this._context.moveTo(this._interactor._mousePosition[0], 0);
         this._context.lineTo(this._interactor._mousePosition[0],
-            this._interactor._mousePosition[1] - 1);
+            this._interactor._mousePosition[1] - 4);
+        this._context.strokeStyle = this._orientationColors[0];
+        //this._context.lineWidth=3;
+        //DashedLine(this._interactor._mousePosition[0],0,this._interactor._mousePosition[0], this._interactor._mousePosition[1] - 4,20,5,this._context);
+        //this._context.closePath();
+        //this._context.beginPath();
         this._context.moveTo(this._interactor._mousePosition[0],
-            this._interactor._mousePosition[1] + 1);
+            this._interactor._mousePosition[1] + 4);
         this._context.lineTo(this._interactor._mousePosition[0],
             this._height);
         this._context.strokeStyle = this._orientationColors[0];
@@ -1326,51 +1762,162 @@ X.renderer2D.prototype.render_ = function(picking, invoked) {
         // in y-direction
         this._context.beginPath();
         this._context.moveTo(0, this._interactor._mousePosition[1]);
-        this._context.lineTo(this._interactor._mousePosition[0] - 1,
+        this._context.lineTo(this._interactor._mousePosition[0] - 4,
             this._interactor._mousePosition[1]);
-        this._context.moveTo(this._interactor._mousePosition[0] + 1, this._interactor._mousePosition[1]);
+        this._context.moveTo(this._interactor._mousePosition[0] + 4, this._interactor._mousePosition[1]);
         this._context.lineTo(this._width,
             this._interactor._mousePosition[1]);
         this._context.strokeStyle = this._orientationColors[1];
         this._context.stroke();
         this._context.closePath();
 
-        // write ijk coordinates
-        this._context.font = '10pt Arial';
-        // textAlign aligns text horizontally relative to placement
-        this._context.textAlign = 'left';
-        // textBaseline aligns text vertically relative to font style
-        this._context.textBaseline = 'top';
-        this._context.fillStyle = 'white';
-        this._context.fillText('RAS: ' + ijk[2][0].toFixed(2) + ', ' + ijk[2][1].toFixed(2) + ', ' + ijk[2][2].toFixed(2), 0, 0);
 
-        var _value = 'undefined';
-        var _valueLM = 'undefined';
-        var _valueCT = 'undefined';
-        if(typeof _volume._IJKVolume[ijk[1][2].toFixed(0)] != 'undefined' && typeof _volume._IJKVolume[ijk[1][2].toFixed(0)][ijk[1][1].toFixed(0)] != 'undefined'){
-          _value = _volume._IJKVolume[ijk[1][2].toFixed(0)][ijk[1][1].toFixed(0)][ijk[1][0].toFixed(0)];
-          if(_volume.hasLabelMap){
-            _valueLM = _volume._labelmap._IJKVolume[ijk[1][2].toFixed(0)][ijk[1][1].toFixed(0)][ijk[1][0].toFixed(0)];
-            if(_volume._labelmap._colorTable){
-              _valueCT = _volume._labelmap._colorTable.get(_valueLM);
-              if(typeof _valueCT != 'undefined'){
-              _valueCT = _valueCT[0];
-              }
-            }
-          }
-        }
-        // get pixel value
-        this._context.fillText('Background:  ' + _value + ' ('+ ijk[1][0].toFixed(0) + ', ' + ijk[1][1].toFixed(0) + ', ' + ijk[1][2].toFixed(0) + ')', 0, 15);
-        // if any label map
-        if(_volume.hasLabelMap){
-          this._context.fillText('Labelmap:  ' + _valueCT + ' ('+ _valueLM + ')', 0, 30);
-        }
+        // _labelFBContext.beginPath();
+        // _labelFBContext.moveTo(ijk[0][0], ijk[0][1]);
+        // _labelFBContext.fillStyle = "rgba(0,0,255,0.4)";
+        // _labelFBContext.fillRect(ijk[0][0]-2, ijk[0][1]-2,4,4);
+        // //_labelFBContext.strokeStyle = "rgba(0,0,255,0.4)";
+        // //_drawingFBContext.lineWidth = 1;
+        // _labelFBContext.stroke();
 
-      }
+        //         // in x-direction
+        // this._context.setTransform(1, 0, 0, 1, 0, 0);
+        // this._context.beginPath();
+        // this._context.moveTo(ijk[0][0], 0);
+        // this._context.lineTo(ijk[0][0],
+        //     ijk[0][1] - 1);
+        // this._context.moveTo(ijk[0][0],
+        //     ijk[0][1] + 1);
+        // this._context.lineTo(ijk[0][0],
+        //     this._height);
+        // this._context.strokeStyle = this._orientationColors[0];
+        // this._context.stroke();
+        // this._context.closePath();
+
+        // // in y-direction
+        // this._context.beginPath();
+        // this._context.moveTo(0, ijk[0][1]);
+        // this._context.lineTo(ijk[0][0] - 1,
+        //     ijk[0][1]);
+        // this._context.moveTo(ijk[0][0] + 1, ijk[0][1]);
+        // this._context.lineTo(this._width,
+        //     ijk[0][1]);
+        // this._context.strokeStyle = this._orientationColors[0];
+        // this._context.stroke();
+        // this._context.closePath();
+
+        /*var CanvasXTKP = document.getElementById('canvasXTKPOver');
+        var heightPrinc = CanvasXTKP.height;
+        var widthPrinc = CanvasXTKP.width;
+        var contextXTKP = CanvasXTKP.getContext('2d');
+        contextXTKP.clearRect(0, 0, CanvasXTKP.width, CanvasXTKP.height);
+        //contextXTKP.fillText('RAS',50,50);
+
+        // in x-direction
+        contextXTKP.setTransform(1, 0, 0, 1, 0, 0);
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(ijk[0][0], 0);
+        contextXTKP.lineTo(ijk[0][0],
+            ijk[0][1] - 1);
+        contextXTKP.moveTo(ijk[0][0],
+            ijk[0][1] + 1);
+        contextXTKP.lineTo(ijk[0][0],
+            CanvasXTKP.height);
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+
+        // in y-direction
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(0, ijk[0][1]);
+        contextXTKP.lineTo(ijk[0][0] - 1,
+            ijk[0][1]);
+        contextXTKP.moveTo(ijk[0][0] + 1, ijk[0][1]);
+        contextXTKP.lineTo(CanvasXTKP.width,
+            ijk[0][1]);
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+
+        // SECOND VIEWER
+        var CanvasXTKP = document.getElementById('canvasXTKXOver');
+        var contextXTKP = CanvasXTKP.getContext('2d');
+        var jX = Math.round((ijk[0][1]*CanvasXTKP.width)/heightPrinc);
+        var kX = Math.round((ijk[0][2]*CanvasXTKP.height)/CanvasXTKP.getAttribute("nbslices"));
+        kX = CanvasXTKP.height - kX;
+        contextXTKP.clearRect(0, 0, CanvasXTKP.width, CanvasXTKP.height);
+
+
+        // in x-direction
+        contextXTKP.setTransform(1, 0, 0, 1, 0, 0);
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(jX, 0);
+        contextXTKP.lineTo(jX,
+            kX - 1);
+        contextXTKP.moveTo(jX,
+            kX + 1);
+        contextXTKP.lineTo(jX,
+            CanvasXTKP.height);
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+
+        // in y-direction
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(0, kX);
+        contextXTKP.lineTo(jX - 1,
+            kX);
+        contextXTKP.moveTo(jX + 1, kX);
+        contextXTKP.lineTo(CanvasXTKP.width,
+            kX);
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+
+
+        // THIRD VIEWER
+
+        var CanvasXTKP = document.getElementById('canvasXTKYOver');
+        var contextXTKP = CanvasXTKP.getContext('2d');
+        var iX = Math.round((ijk[0][0]*CanvasXTKP.width)/widthPrinc);
+        var kX = Math.round((ijk[0][2]*CanvasXTKP.height)/CanvasXTKP.getAttribute("nbslices"));
+        kX = CanvasXTKP.height - kX;
+        contextXTKP.clearRect(0, 0, CanvasXTKP.width, CanvasXTKP.height);
+
+        // in x-direction
+        contextXTKP.setTransform(1, 0, 0, 1, 0, 0);
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(iX, 0);
+        contextXTKP.lineTo(iX,
+            kX - 1);
+        contextXTKP.moveTo(iX,
+            kX + 1);
+        contextXTKP.lineTo(iX,
+            CanvasXTKP.height );
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+
+        // in y-direction
+        contextXTKP.beginPath();
+        contextXTKP.moveTo(0, kX);
+        contextXTKP.lineTo(iX - 1,
+            kX);
+        contextXTKP.moveTo(iX + 1, kX);
+        contextXTKP.lineTo(CanvasXTKP.width,
+            kX);
+        contextXTKP.strokeStyle = 'rgba(255,255,255,1)';
+        contextXTKP.stroke();
+        contextXTKP.closePath();
+        //CHANGEMENT
+      */
+    }
+
+
 
     }
 else{
-    this._canvas.style.cursor = "default";
+    this._canvas.style.cursor = "auto";
   }
   }
 

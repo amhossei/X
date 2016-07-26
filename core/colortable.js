@@ -101,6 +101,36 @@ X.colortable.prototype.add = function(value, label, r, g, b, a) {
 
 };
 
+/**
+ * Add an entry to this color table. Alpha channel is considered as '1'.
+ * 
+ * @param {!string} label The label.
+ * @param {!number} r The red component.
+ * @param {!number} g The green component.
+ * @param {!number} b The blue component.
+ * @throws {Error} An error, if the given values are invalid.
+ */
+X.colortable.prototype.createSingleColorTable = function(label, r, g, b) {
+
+  if (!goog.isString(label) || !goog.isNumber(r) || !goog.isNumber(g) ||
+      !goog.isNumber(b)) {
+    
+    throw new Error('Invalid color table entry.');
+    
+  }
+
+  //First clear the colorTable if any
+  this._map.clear();
+  //Set up a black background with 0 as alpha channel
+  this._map.set(0, ['background', 0, 0, 0, 0]);
+  //then the actual desired color
+  this._map.set(1, [label, r, g, b, 1]);
+  this._isUniqueColor = true;
+
+  this._dirty = true;
+  
+};
+
 
 /**
  * Get the color for a label value.
@@ -114,5 +144,27 @@ X.colortable.prototype.get = function(value) {
 
 };
 
+/**
+ * Modify the color of one label if there is only one.
+ * 
+ * input is the color provided by the color chooser
+ * @param {!Array} myRGBArray Array of rgb components.
+ *
+ * @throws {Error} An error, if the given values are invalid.
+ */
+X.colortable.prototype.updateSingleColor=function(myRGBArray) {
+
+  if ( (this._isUniqueColor = false) || !goog.isArray(myRGBArray) ){
+    throw new Error('This is not a single color Table');
+
+  }
+
+  var labelName = this._map.get([1][0]);
+  this.createSingleColorTable(labelName[0], myRGBArray[0], myRGBArray[1], myRGBArray[2]);
+
+};
+
 
 goog.exportSymbol('X.colortable.prototype.get', X.colortable.prototype.get);
+goog.exportSymbol('X.colortable.prototype.createSingleColorTable', X.colortable.prototype.createSingleColorTable);
+goog.exportSymbol('X.colortable.prototype.updateSingleColor', X.colortable.prototype.updateSingleColor);

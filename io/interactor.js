@@ -222,6 +222,14 @@ X.interactor = function(element) {
   this._shiftDown = false;
 
   /**
+   * The enter down flag.
+   *
+   * @type {boolean}
+   * @protected
+   */
+  this._enterDown = false;
+
+  /**
    * The configuration of this interactor.
    *
    * @enum {boolean}
@@ -954,11 +962,23 @@ X.interactor.prototype.onMouseMovementInside_ = function(event) {
   // is shift down?
   var shiftDown = event.shiftKey;
 
+  var enterDown = event.keyCode == 13;
+
   // store the shiftState
   this._shiftDown = shiftDown;
 
+  // store the enterState
+  this._enterDown = enterDown;
+
   // grab the current mouse position
-  this._mousePosition = [event.offsetX, event.offsetY];
+  //CHANGEMENT 
+  // With the ratio multiplication, the cross hair will be at the right place
+  /*var rend2 = document.getElementById("rendimage2");
+  var canvaso = document.getElementById("imageTemp");
+  var ev_x = Math.round((canvaso.width*event.offsetX)/rend2.clientWidth);
+  var ev_y = Math.round((canvaso.height*event.offsetY)/rend2.clientHeight);
+  //window.console.log("interactor  "+ev_x + "  "+ev_y);*/
+  this._mousePosition = [event.offsetX,event.offsetY];
   var currentMousePosition = new X.vector(this._mousePosition[0],
       this._mousePosition[1], 0);
 
@@ -1020,11 +1040,12 @@ X.interactor.prototype.onMouseMovementInside_ = function(event) {
 
   }
 
-
+  // UPDATE
   //
   // check which mouse buttons or keys are pressed
   //
   if (this._leftButtonDown && !shiftDown) {
+    
     //
     // LEFT MOUSE BUTTON DOWN AND NOT SHIFT DOWN
     //
@@ -1040,7 +1061,7 @@ X.interactor.prototype.onMouseMovementInside_ = function(event) {
 
     // .. fire the event
     this.dispatchEvent(e);
-
+  
 
   } else if (this._middleButtonDown || (this._leftButtonDown && shiftDown)) {
     //
@@ -1055,9 +1076,10 @@ X.interactor.prototype.onMouseMovementInside_ = function(event) {
 
     // .. fire the event
     this.dispatchEvent(e);
-
+  
 
   } else if (this._rightButtonDown) {
+    
     //
     // RIGHT MOUSE BUTTON DOWN
     //
@@ -1075,8 +1097,22 @@ X.interactor.prototype.onMouseMovementInside_ = function(event) {
 
     // .. fire the event
     this.dispatchEvent(e);
+    
 
+    //CHANGE /!\
+/*
+    // create a new rotate event
+    var e = new X.event.RotateEvent();
 
+    // make the rotation a little faster
+    distance.scale(3);
+
+    // attach the distance vector
+    e._distance = distance;
+
+    // .. fire the event
+    this.dispatchEvent(e);
+*/
   }
 
 };
@@ -1127,7 +1163,9 @@ X.interactor.prototype.onMouseWheel_ = function(event) {
   this.hoverEnd_();
 
   // prevent any other action (like scrolling..)
+  
   event.preventDefault();
+  
 
 };
 
@@ -1151,6 +1189,7 @@ X.interactor.prototype.onKey = function(event) {
  * @param {Event} event The browser fired event.
  * @protected
  */
+
 X.interactor.prototype.onKey_ = function(event) {
 
   // only listen to key events if the mouse is inside our element

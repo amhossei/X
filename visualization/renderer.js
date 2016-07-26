@@ -105,6 +105,8 @@ X.renderer = function() {
    */
   this._canvas = null;
 
+  //this.__canvasOver = null;
+
   /**
    * The camera of this renderer.
    *
@@ -420,10 +422,22 @@ X.renderer.prototype.resize = function() {
   this._width = container.clientWidth;
   this._height = container.clientHeight;
 
+  //UPDATE CHANGEMENT Don't resize the canvas width and height
   // propagate it to the canvas
   var canvas = goog.dom.getElement(this._canvas);
+  //var __canvasOver = goog.dom.getElement(this.__canvasOver);
+
+  /*canvas.style.width = this._width;
+  canvas.style.height = this._height;
+
+  __canvasOver.style.width = this._width;
+  __canvasOver.style.height = this._height;*/
+
   canvas.width = this._width;
   canvas.height = this._height;
+
+  //__canvasOver.width = this._width;
+  //__canvasOver.height = this._height;
 
   if (this._classname == 'renderer3D') {
 
@@ -581,7 +595,18 @@ X.renderer.prototype.__defineSetter__('container', function(container) {
  */
 X.renderer.prototype.resetViewAndRender = function() {
 
+  this.resize();
+
   this._camera.reset();
+  //CHANGE SMOOTHING
+  var _canvas = document.getElementById("canvasXTKY") 
+  _canvas.getContext('2d').imageSmoothingEnabled = false;
+
+  _canvas = document.getElementById("canvasXTKX") 
+  _canvas.getContext('2d').imageSmoothingEnabled = false;
+
+  _canvas = document.getElementById("canvasXTKP") 
+  _canvas.getContext('2d').imageSmoothingEnabled = false;
   // this.render_(false, false);
 
 };
@@ -663,22 +688,47 @@ X.renderer.prototype.hideProgressBar_ = function() {
  */
 X.renderer.prototype.init = function(_contextName) {
 
+  // UPDATE CANVASOVER
+
   // create the canvas
   var _canvas = goog.dom.createDom('canvas');
+  //var __canvasOver = goog.dom.createDom('canvas');
 
   //
   // append it to the container
   goog.dom.appendChild(this._container, _canvas);
+  //goog.dom.appendChild(this._container, __canvasOver);
 
   // the container might have resized now, so update our width and height
   // settings
   this._width = this._container.clientWidth;
+
+  if(this._orientation =="Z"){
+    _canvas.setAttribute("id","canvasXTKP");
+    //__canvasOver.setAttribute("id","canvasXTKPOver");
+  }
+  else if(this._orientation == "X"){
+    _canvas.setAttribute("id","canvasXTKX");
+    //__canvasOver.setAttribute("id","canvasXTKXOver");
+    //this._container.style.height = (this._sliceWidth*this._sliceWidthSpacing*this._width/(this._sliceHeight*this._sliceHeightSpacing))+"px";
+  }
+  else if(this._orientation == "Y"){
+    _canvas.setAttribute("id","canvasXTKY");
+    //__canvasOver.setAttribute("id","canvasXTKYOver");
+  }
+
   this._height = this._container.clientHeight;
 
   // width and height can not be set using CSS but via object properties
   _canvas.width = this._width;
   _canvas.height = this._height;
+  //__canvasOver.width = this._width;
+  //__canvasOver.height = this._height;
 
+  _canvas.getContext('2d').imageSmoothingEnabled = false;
+  _canvas.style.position = 'absolute';
+  //__canvasOver.getContext('2d').imageSmoothingEnabled = false;
+  //__canvasOver.style.position = 'absolute';
 
   // --------------------------------------------------------------------------
   //
@@ -732,6 +782,8 @@ X.renderer.prototype.init = function(_contextName) {
   // Step 1c: Register the created canvas to this instance
   //
   this._canvas = _canvas;
+
+  //this.__canvasOver = __canvasOver;
 
   //
   // Step 1d: Register the created context to this instance

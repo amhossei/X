@@ -155,9 +155,8 @@ X.loader.prototype.checkFileFormat = function(container) {
 
   // grab the file extension
   var extension = filepath.split('.').pop().toUpperCase();
-
   // support no extensions
-  if (extension == filepath.toUpperCase()) {
+  if (extension == filepath.toUpperCase() || !isNaN(parseInt(extension))) {
 
     // this means no extension
     extension = '';
@@ -270,6 +269,9 @@ X.loader.prototype.parse = function(request, container, object) {
     var _checkresult = this.checkFileFormat(container);
     var parser = _checkresult[2]; // the (uninstantiated) parser
     var flags = _checkresult[3]; // some (optional) custom flags
+    //window.console.log(parser);
+    //window.console.log(_checkresult);
+
 
     // instantiate the parser
     var _parser = new parser;
